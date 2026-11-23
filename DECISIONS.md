@@ -47,3 +47,17 @@ Add one line per decision: date · decision · reason. Never reopen a decision w
 - 2026-11-23 · Supabase env vars use the new key names `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY` · Supabase's current API keys replace anon / service_role.
 - 2026-11-23 · Inter loaded with next/font as `--font-sans` now (type scale and tabular-nums in task 0.2) · shadcn init left the font pointing at the removed Geist.
 - 2026-11-23 · Next.js 16 re-adds a "nextjs-agent-rules" block to AGENTS.md on `next dev`; it is committed as part of AGENTS.md · Avoids a permanent unexplained diff.
+
+### Task 0.2 — design system
+- 2026-11-23 · Token names follow DESIGN.md, except DESIGN `--muted` → `--muted-foreground` and DESIGN `--accent` → `--accent-ink`; shadcn's `muted`/`accent` keep their meaning (subtle backgrounds) and are mapped onto our tokens · Components added later with `shadcn add` inherit the brand without breaking.
+- 2026-11-23 · Derived tokens not in DESIGN.md: `--surface-subtle`, `--border-strong`, dark-mode soft badge colours, `--danger-foreground`, `--kpi-hero-negative`, `--overlay`; dark chart series 1 = `#C9D6E3` (navy is invisible on the dark background) · DESIGN.md gives light-mode values only for these.
+- 2026-11-23 · Theme via next-themes (class on `<html>`, default "system"). Colours come only from tokens — no `dark:` utilities — so a `.light`/`.dark` wrapper can theme any subtree · Lets /styleguide show both modes side by side.
+- 2026-11-23 · `cn` is created in `src/lib/utils.ts` with `createCn` so tailwind-merge knows the custom type scale; ESLint forbids importing `cn` from "cn" · Otherwise `text-caption` etc. were treated as colours and removed text colours (found visually on /styleguide).
+- 2026-11-23 · Toasts use shadcn's `sonner` (shadcn's toast component is deprecated in favour of it) · Prompt asked for "Toast".
+- 2026-11-23 · Tabs: "line" (default, detail pages) and "segmented" (view toggles) variants; Button gets a `pending` prop; Label gets `required`; Sheet gets `SheetBody` (scrolling) and floats with 16px radius · DESIGN.md §5 and §7 requirements.
+- 2026-11-23 · Focus: global 2px `--focus-ring` outline on `:focus-visible`; text fields use border + soft ring instead · DESIGN.md §7; outline on inputs looked detached.
+- 2026-11-23 · MoneyText formats the Postgres decimal string directly with Intl (exact, half-up rounding, `signDisplay: "negative"`); DateText treats `YYYY-MM-DD` as a calendar date (never shifted) and instants as Africa/Lagos · No float maths; due dates must not move a day.
+- 2026-11-23 · Domain status → tone/label maps live in `src/lib/status.ts` · One place decides how every status looks.
+- 2026-11-23 · Vitest 5 for unit tests (`npm test`); `@types/node` bumped to 24 to satisfy its peer range and match the Node 24 runtime · Vitest 5 requires @types/node ≥ 22.
+- 2026-11-23 · "One component per file" means one *exported* component; small private helpers (e.g. a swatch) may live beside it · Keeps files cohesive without dozens of 10-line files.
+- 2026-11-23 · Shared class strings for fields, popovers and menu rows live in `src/components/ui/styles.ts` · Inputs and selects line up exactly; plain module so Server Components can import it.

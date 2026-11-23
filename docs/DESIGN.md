@@ -45,6 +45,8 @@ Cyan and mint are **neon** colours. On white they fail contrast (cyan on white =
 | `--danger` | `#B91C1C` | `#F87171` | Overdue, declined, default |
 | `--info` | `#1D4ED8` | `#60A5FA` | Informational |
 
+**Implementation names** (`src/app/globals.css`): every token above exists as a CSS variable and Tailwind colour with the same name, except two that clash with shadcn's slot names (where `muted`/`accent` are *background* colours): DESIGN `--muted` → `--muted-foreground` (`text-muted-foreground`), DESIGN `--accent` → `--accent-ink` (`text-accent-ink`). Derived helpers: `--surface-subtle`, `--border-strong`, `*-soft` / `*-soft-foreground` for badges, `--kpi-hero-*`. Dark-mode badge and chart values not given above are derived and listed on `/styleguide`. Type scale classes: `text-display`, `text-h1`, `text-h2`, `text-body`, `text-small`, `text-caption`; tabular figures: `num`.
+
 Soft status badges (light mode): success `#ECFDF5`/`#047857`, warning `#FEF3C7`/`#92400E`, danger `#FEE2E2`/`#B91C1C`, info `#EFF6FF`/`#1D4ED8`. Status colours always pair with a text label/icon (never colour alone). Success is deliberately a deeper green than the brand mint so "paid" never looks like decoration.
 
 ### Signature component: the navy KPI card

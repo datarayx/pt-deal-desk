@@ -15,6 +15,20 @@ const eslintConfig = defineConfig([
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      // `cn` must come from @/lib/utils, which teaches tailwind-merge our custom type scale.
+      // (`shadcn add` generates `from "cn"` — fix the import after adding a component.)
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "cn",
+              importNames: ["cn"],
+              message: 'Import { cn } from "@/lib/utils" (it knows the custom text-* sizes).',
+            },
+          ],
+        },
+      ],
     },
   },
   // Must be last: turns off ESLint rules that conflict with Prettier

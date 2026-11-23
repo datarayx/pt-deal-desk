@@ -2,133 +2,338 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Dark mode is class-based (next-themes puts `.dark` on <html>). A `.dark` wrapper also works
+   on any subtree — the styleguide uses this to show light and dark side by side. */
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
+/* ==========================================================================
+   1. Design tokens — docs/DESIGN.md §2–3. Hex values copied verbatim.
+   Naming: DESIGN.md token names are used as-is, except where they clash with
+   shadcn's slots (shadcn `muted`/`accent` are *background* colours):
+     DESIGN --muted  (secondary text) → --muted-foreground
+     DESIGN --accent (ink teal)       → --accent-ink
+   ========================================================================== */
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+:root,
+.light {
+  /* Brand */
+  --brand: #011a32;
+  --brand-foreground: #ffffff;
+  --brand-hover: #0b2a47;
+  --brand-cyan: #00f6f1; /* only on navy surfaces */
+  --brand-mint: #00eaa2; /* only on navy surfaces */
+  --brand-teal: #00b29e;
+
+  /* Sidebar (navy in both modes) */
+  --sidebar: #011a32;
+  --sidebar-text: #c9d6e3;
+  --sidebar-active: #0b2a47;
+  --sidebar-indicator: #00f6f1;
+
+  /* Accent (teal you can read on white) */
+  --accent-ink: #00796f;
+  --accent-soft: #e6f7f3;
+
+  /* Surfaces & text */
+  --background: #f4f7f9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-subtle: #eef2f6; /* derived: hover / soft fills on white */
+  --border: #e3e8ee;
+  --border-strong: #cfd8e1; /* derived: input hover, table header rule */
+  --text: #0b1b2b;
+  --text-muted: #5b6b7b;
+  --focus-ring: #00b29e;
+
+  /* Status (solid) */
+  --success: #047857;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  --info: #1d4ed8;
+  --danger-foreground: #ffffff;
+
+  /* Status (soft badges) */
+  --success-soft: #ecfdf5;
+  --success-soft-foreground: #047857;
+  --warning-soft: #fef3c7;
+  --warning-soft-foreground: #92400e;
+  --danger-soft: #fee2e2;
+  --danger-soft-foreground: #b91c1c;
+  --info-soft: #eff6ff;
+  --info-soft-foreground: #1d4ed8;
+  --neutral-soft: #eef2f6;
+  --neutral-soft-foreground: #3d4b5a;
+
+  /* Charts — DESIGN.md §2 order */
+  --chart-1: #011a32;
+  --chart-2: #00b29e;
+  --chart-3: #00eaa2;
+  --chart-4: #7c93ab;
+  --chart-5: #c9d6e3;
+
+  /* Navy KPI card */
+  --kpi-hero: #011a32;
+  --kpi-hero-foreground: #ffffff;
+  --kpi-hero-muted: #93a4b6;
+  --kpi-hero-delta: #00eaa2;
+  --kpi-hero-negative: #fca5a5; /* derived: readable red on navy */
+
+  /* Elevation — borders do most of the work */
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-overlay: 0 8px 24px -6px rgb(1 26 50 / 0.14), 0 2px 6px -2px rgb(1 26 50 / 0.08);
+  --shadow-sheet: 0 24px 48px -12px rgb(1 26 50 / 0.24);
+  --overlay: rgb(1 26 50 / 0.32);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --brand: #00f6f1;
+  --brand-foreground: #011a32;
+  --brand-hover: #5bfaf6;
+
+  --sidebar: #020f1e;
+  --sidebar-text: #c9d6e3;
+  --sidebar-active: #0b2a47;
+  --sidebar-indicator: #00f6f1;
+
+  --accent-ink: #00eaa2;
+  --accent-soft: #0a2e2b;
+
+  --background: #06121f;
+  --surface: #0b1e33;
+  --surface-raised: #102742;
+  --surface-subtle: #132b47;
+  --border: #1b3350;
+  --border-strong: #27466a;
+  --text: #e6eef5;
+  --text-muted: #93a4b6;
+  --focus-ring: #00f6f1;
+
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+  --danger-foreground: #1f0707;
+
+  /* Derived: DESIGN.md gives soft badges for light mode only */
+  --success-soft: #0b2e26;
+  --success-soft-foreground: #34d399;
+  --warning-soft: #2e2410;
+  --warning-soft-foreground: #fbbf24;
+  --danger-soft: #331519;
+  --danger-soft-foreground: #f87171;
+  --info-soft: #11264a;
+  --info-soft-foreground: #60a5fa;
+  --neutral-soft: #132b47;
+  --neutral-soft-foreground: #c9d6e3;
+
+  /* Derived: navy is invisible on the dark background, so series 1 becomes light slate */
+  --chart-1: #c9d6e3;
+  --chart-2: #00b29e;
+  --chart-3: #00eaa2;
+  --chart-4: #7c93ab;
+  --chart-5: #3d5a78;
+
+  --kpi-hero: #011a32;
+  --kpi-hero-foreground: #ffffff;
+  --kpi-hero-muted: #93a4b6;
+  --kpi-hero-delta: #00eaa2;
+  --kpi-hero-negative: #fca5a5;
+
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-overlay: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --shadow-sheet: 0 24px 48px -12px rgb(0 0 0 / 0.6);
+  --overlay: rgb(2 8 16 / 0.6);
 }
+
+/* shadcn slots, mapped onto the tokens above (so `shadcn add` components inherit the brand) */
+:root,
+.light,
+.dark {
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--surface-subtle);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-subtle);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--surface-subtle);
+  --accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--focus-ring);
+  --radius: 0.5rem;
+
+  --sidebar-foreground: var(--sidebar-text);
+  --sidebar-primary: var(--sidebar-indicator);
+  --sidebar-primary-foreground: #011a32;
+  --sidebar-accent: var(--sidebar-active);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: var(--sidebar-indicator);
+}
+
+/* ==========================================================================
+   2. Tailwind theme
+   ========================================================================== */
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* shadcn slots */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* DESIGN.md tokens */
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-brand-mint: var(--brand-mint);
+  --color-brand-teal: var(--brand-teal);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-indicator: var(--sidebar-indicator);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-focus-ring: var(--focus-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-foreground: var(--danger-soft-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-neutral-soft-foreground: var(--neutral-soft-foreground);
+  --color-kpi-hero: var(--kpi-hero);
+  --color-kpi-hero-foreground: var(--kpi-hero-foreground);
+  --color-kpi-hero-muted: var(--kpi-hero-muted);
+  --color-kpi-hero-delta: var(--kpi-hero-delta);
+  --color-kpi-hero-negative: var(--kpi-hero-negative);
+  --color-overlay: var(--overlay);
+
+  /* Radius — DESIGN.md §4: 8px inputs/buttons (lg), 12px cards (xl), 16px sheets/dialogs (2xl) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 9999px;
+
+  /* Elevation */
+  --shadow-xs: var(--shadow-subtle);
+  --shadow-sm: var(--shadow-subtle);
+  --shadow-md: var(--shadow-overlay);
+  --shadow-lg: var(--shadow-overlay);
+  --shadow-xl: var(--shadow-sheet);
+}
+
+/* Type scale — DESIGN.md §3b. Use `text-display`, `text-h1`, … ; captions also add text-muted-foreground */
+@theme {
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
+  --text-display--font-weight: 600;
+  --text-display--letter-spacing: -0.022em;
+  --text-h1: 1.5rem;
+  --text-h1--line-height: 2rem;
+  --text-h1--font-weight: 600;
+  --text-h1--letter-spacing: -0.018em;
+  --text-h2: 1.125rem;
+  --text-h2--line-height: 1.75rem;
+  --text-h2--font-weight: 600;
+  --text-h2--letter-spacing: -0.012em;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.125rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+}
+
+/* Tabular figures for money, dates and any column of numbers */
+@utility num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    "tnum" 1,
+    "lnum" 1;
+}
+
+/* ==========================================================================
+   3. Base
+   ========================================================================== */
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  html {
+    @apply bg-background font-sans;
+    font-feature-settings: "cv11" 1; /* Inter: single-storey a reads cleaner in dense UI */
+    -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-body text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+  /* DESIGN.md: 2px focus ring, visible on keyboard focus only */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--text);
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
-  }
-  html {
-    @apply font-sans;
   }
 }
