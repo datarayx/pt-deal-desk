@@ -35,3 +35,15 @@ Add one line per decision: date · decision · reason. Never reopen a decision w
 - 2026-11-23 · Money logic (schedule generation, fee recognition, journal posting, reminders) lives in Postgres functions called by Server Actions, the seed and pg_cron; numeric values cross the API as text · One source of truth; avoids JS float precision.
 - 2026-11-23 · Add `reminder_log` (schedule_id/deal_id, condition, sent_on, unique) for duplicate suppression; pg_cron schedule `0 6 * * *` UTC = 07:00 Africa/Lagos · "No duplicates" rule needs a key.
 - 2026-11-23 · PDFs embed the Inter font so the ₦ glyph renders · @react-pdf built-in fonts lack ₦.
+
+### Task 0.1 — scaffold
+- 2026-11-23 · Next.js 16.4.6 + React 19.3 + Tailwind 4.3 (Turbopack), `src/` dir, `@/*` alias; keep the scaffold defaults `cacheComponents` and `partialPrefetching` on · Current stable; defaults are the supported path in v16.
+- 2026-11-23 · Route protection lives in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts`) · Per bundled Next.js 16 docs.
+- 2026-11-23 · shadcn/ui 4.23 initialised with the Radix base ("radix-nova" style), neutral base colour, lucide icons; restyle to DESIGN.md tokens happens in task 0.2 · AGENTS.md mandates Radix primitives.
+- 2026-11-23 · Keep shadcn's `cn` package (official shadcn-ui replacement for clsx + tailwind-merge); `shadcn` CLI is a devDependency · It is only needed at build time for `shadcn/tailwind.css` and for adding components.
+- 2026-11-23 · Folder layout recorded in docs/STRUCTURE.md · The kick-off agreement only existed in chat.
+- 2026-11-23 · Prettier (print width 100, double quotes, trailing commas, LF) with the Tailwind class-sorting plugin; eslint-config-prettier disables clashing rules; `.md` docs excluded from formatting; `.gitattributes` forces LF · Consistent diffs on Windows.
+- 2026-11-23 · ESLint enforces AGENTS.md rules: `no-explicit-any` and `no-console` (warn/error allowed) as errors · Make the conventions automatic.
+- 2026-11-23 · Supabase env vars use the new key names `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY` · Supabase's current API keys replace anon / service_role.
+- 2026-11-23 · Inter loaded with next/font as `--font-sans` now (type scale and tabular-nums in task 0.2) · shadcn init left the font pointing at the removed Geist.
+- 2026-11-23 · Next.js 16 re-adds a "nextjs-agent-rules" block to AGENTS.md on `next dev`; it is committed as part of AGENTS.md · Avoids a permanent unexplained diff.

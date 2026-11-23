@@ -1,7 +1,7 @@
 # TASKS.md — Build checklist (AI ticks these off)
 
 ## Phase 0 — Foundation
-- [ ] 0.1 Scaffold Next.js + TS + Tailwind + shadcn/ui; ESLint/Prettier; folder structure
+- [x] 0.1 Scaffold Next.js + TS + Tailwind + shadcn/ui; ESLint/Prettier; folder structure
 - [ ] 0.2 Design tokens (light/dark) + fonts per DESIGN.md; component restyle
 - [ ] 0.3 App shell: sidebar, top bar, ⌘K, bell, user menu, theme toggle
 - [ ] 0.4 Supabase project, env vars, @supabase/ssr auth, login/reset pages

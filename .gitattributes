@@ -1,0 +1,6 @@
+# Keep LF in the repo and working tree so Prettier (endOfLine: lf) and Windows agree
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary
+*.woff2 binary

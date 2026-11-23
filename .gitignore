@@ -19,6 +19,9 @@ supabase/.branches/
 # testing
 coverage/
 
+# certificates
+*.pem
+
 # logs & OS
 npm-debug.log*
 *.log
