@@ -35,3 +35,14 @@ pt-deal-desk/
 1. Create an empty folder, copy this kit in, run `git init`.
 2. Open it in your AI coding tool.
 3. Open `PROMPTS.md` and paste Prompt 0. Go in order.
+
+## Running the app
+
+1. `npm install`
+2. Copy `.env.example` to `.env.local` and fill in the Supabase URL, keys, `SUPABASE_DB_URL` and the two demo passwords (at least 10 characters).
+3. `npm run db:push` — apply the database migrations in `supabase/migrations/`.
+4. `npm run demo:users` — create the demo CEO and Accountant sign-ins.
+5. `npm run db:seed` — reset and load the demo data (demo databases only; it refuses otherwise).
+6. `npm run dev` — open http://localhost:3000 and sign in with a demo account.
+
+Other scripts: `npm run db:types` (regenerate `src/types/database.ts` after a migration), `npm test`, `npm run lint`, `npm run build`.

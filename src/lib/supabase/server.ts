@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 
 import { requireSupabasePublicEnv } from "@/lib/supabase/env";
+import type { Database } from "@/types/database";
 
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers, acting as the
@@ -19,7 +20,7 @@ export async function createSupabaseServerClient() {
   await connection();
   const { url, publishableKey } = requireSupabasePublicEnv();
 
-  return createServerClient(url, publishableKey, {
+  return createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

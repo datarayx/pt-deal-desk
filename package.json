@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "demo:users": "node --env-file=.env.local scripts/create-demo-users.mts",
     "db:push": "node --env-file=.env.local scripts/db-push.mts",
+    "db:seed": "node --env-file=.env.local scripts/seed.mts",
+    "db:types": "node --env-file=.env.local scripts/db-types.mts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

@@ -10,8 +10,8 @@
 ## Phase 1 — Data
 - [x] 1.1 Migrations: all tables, enums, constraints, indexes, RLS policies
 - [x] 1.2 Storage buckets + policies
-- [ ] 1.3 Seed script per SEED_DATA.md
-- [ ] 1.4 Generated TypeScript types
+- [x] 1.3 Seed script per SEED_DATA.md
+- [x] 1.4 Generated TypeScript types
 
 ## Phase 2 — Core modules
 - [ ] 2.1 Settings (stages, facility types, KYC checklists, recipients, reminder days, fee defaults)

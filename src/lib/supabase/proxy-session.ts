@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { isRole, type Role } from "@/lib/auth/access";
 import type { SupabasePublicEnv } from "@/lib/supabase/env";
+import type { Database } from "@/types/database";
 
 export type ProxySession = {
   /** Pass-through response carrying any refreshed auth cookies and no-cache headers. */
@@ -22,7 +23,7 @@ export async function getProxySession(
 ): Promise<ProxySession> {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(env.url, env.publishableKey, {
+  const supabase = createServerClient<Database>(env.url, env.publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
