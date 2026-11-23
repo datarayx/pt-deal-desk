@@ -50,6 +50,16 @@ All tables: `id uuid pk default gen_random_uuid()`, `created_at timestamptz defa
 - **periods**: period (YYYY-MM), is_locked
 - **settings**: key, value jsonb (reminder days, VAT %, WHT %, company profile, fiscal year end)
 
+## Implementation notes (migrations `20261123200000`–`…201000`)
+Columns added beyond the lists above, each for a rule in WORKFLOWS/ACCOUNTING:
+- `journal_entries`: `posted_at`, `reverses_entry_id` (a posted system entry is corrected by a reversal; each entry can be reversed once). `period` is derived from `entry_date` by trigger.
+- `periods`: `locked_at`, `locked_by`. A month with no `periods` row is open.
+- `deal_requirements`: `is_required`, `sort_order` (copied from the financier's checklist; deficiencies = pending required items).
+- `external_exposures.status`: `active` | `closed` | `delinquent`.
+- `audit_log` uses `at` as its timestamp and has no `updated_at`/`created_by` (append-only; `actor_id` is the author).
+- Accountant-safe access is via functions: `finance_referrers()` (name, bank_name, account_name) and `fee_lines_finance()` behind the view `v_fee_lines_finance`.
+- `v_trial_balance(period_from, period_to)` is the function `trial_balance(period_from, period_to)`.
+
 ## Views (for reports)
 - `v_trial_balance(period_from, period_to)`, `v_account_balances`, `v_receivables_aging`, `v_overdue_ageing`, `v_pipeline_by_stage`, `v_client_reliability`
 - Accountant-safe views: `v_fee_lines_finance` (deal reference + client display name only)

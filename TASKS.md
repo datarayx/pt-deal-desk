@@ -8,8 +8,8 @@
 - [x] 0.5 Roles + RLS helper + route protection per role
 
 ## Phase 1 — Data
-- [ ] 1.1 Migrations: all tables, enums, constraints, indexes, RLS policies
-- [ ] 1.2 Storage buckets + policies
+- [x] 1.1 Migrations: all tables, enums, constraints, indexes, RLS policies
+- [x] 1.2 Storage buckets + policies
 - [ ] 1.3 Seed script per SEED_DATA.md
 - [ ] 1.4 Generated TypeScript types
 
