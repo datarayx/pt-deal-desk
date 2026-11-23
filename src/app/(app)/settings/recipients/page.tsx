@@ -1,17 +1,42 @@
+import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { PlaceholderPage } from "@/components/common/placeholder-page";
+import { Button } from "@/components/ui/button";
+import { RecipientSheet } from "@/features/settings/components/recipient-sheet";
+import { RecipientsList } from "@/features/settings/components/recipients-list";
+import { SettingsPanel } from "@/features/settings/components/settings-panel";
+import { SettingsPanelSkeleton } from "@/features/settings/components/settings-panel-skeleton";
+import { getRecipients } from "@/features/settings/queries";
 
 export const metadata: Metadata = { title: "Notification recipients · Settings" };
 
-export default function SettingsRecipientsPage() {
+async function RecipientsSection() {
+  const recipients = await getRecipients();
   return (
-    <PlaceholderPage
-      level="section"
+    <SettingsPanel
       title="Notification recipients"
-      description="Staff who get reminder emails but don't sign in."
-      task="2.1"
-      contents="Name, title, email and which alerts each recipient receives (due soon, due today, overdue, stale deals)."
-    />
+      description="People who receive alert emails, and which alerts each one gets. Pause someone with the switch without losing their settings."
+      action={
+        <RecipientSheet
+          trigger={
+            <Button>
+              <PlusIcon /> Add recipient
+            </Button>
+          }
+        />
+      }
+      flush
+    >
+      <RecipientsList recipients={recipients} />
+    </SettingsPanel>
+  );
+}
+
+export default function RecipientsPage() {
+  return (
+    <Suspense fallback={<SettingsPanelSkeleton rows={4} />}>
+      <RecipientsSection />
+    </Suspense>
   );
 }

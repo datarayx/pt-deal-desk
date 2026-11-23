@@ -306,14 +306,14 @@ isOneToOne: false
                   ]
                 },"deal_stages": {
                   Row: {
-                    "color": string | null,"created_at": string,"created_by": string | null,"id": string,"is_terminal": boolean,"name": string,"sort_order": number,"updated_at": string | null
+                    "color": string | null,"created_at": string,"created_by": string | null,"id": string,"is_terminal": boolean,"name": string,"sort_order": number,"system_key": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_terminal"?: boolean,"name": string,"sort_order": number,"updated_at"?: string | null
+                    "color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_terminal"?: boolean,"name": string,"sort_order": number,"system_key"?: string | null,"updated_at"?: string | null
                   }
                   Update: {
-                    "color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_terminal"?: boolean,"name"?: string,"sort_order"?: number,"updated_at"?: string | null
+                    "color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_terminal"?: boolean,"name"?: string,"sort_order"?: number,"system_key"?: string | null,"updated_at"?: string | null
                   }
                   Relationships: [
                     
@@ -857,6 +857,12 @@ isOneToOne: false
                            },
 "setting_numeric":
 { Args: { "p_default": number,"p_key": string }; Returns: number
+                           },
+"sign_out_everywhere":
+{ Args: { "p_user_id": string }; Returns: number
+                           },
+"stage_name":
+{ Args: { "p_key": string }; Returns: string
                            },
 "trial_balance":
 { Args: { "period_from": string,"period_to": string }; Returns: {

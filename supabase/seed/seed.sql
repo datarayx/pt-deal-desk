@@ -386,7 +386,7 @@ begin
                               guarantor_name, guarantor_cheques, other_fees_note, owner_id, created_at)
     values (v_ref, v_client, v_fin, case when d.use_referrer then v_referrer end,
             (select id from public.facility_types where name = d.facility),
-            (select id from public.deal_stages where name = 'Enquiry'), public.lagos_noon(v_created),
+            (select id from public.deal_stages where system_key = 'enquiry'), public.lagos_noon(v_created),
             d.requested, d.tenor, d.rate, d.purpose, d.collateral, d.coll_value,
             d.guarantor, d.cheques, d.other_fees, ceo, public.lagos_noon(v_created))
     returning id into v_deal;
@@ -398,11 +398,11 @@ begin
     -- Walk the pipeline, spreading stage entries evenly up to the final stage date
     v_steps := greatest(v_walk_to - 1, 1);
     v_k := 0;
-    for v_stage in select name, sort_order from public.deal_stages where sort_order between 2 and v_walk_to order by sort_order loop
+    for v_stage in select name, sort_order, system_key from public.deal_stages where sort_order between 2 and v_walk_to order by sort_order loop
       v_k := v_k + 1;
       perform public.move_deal_stage(v_deal, v_stage.name, null,
         public.lagos_noon(v_created + ((v_final - v_created) * v_k / v_steps)));
-      if v_stage.name = 'Approved' then
+      if v_stage.system_key = 'approved' then
         update public.deals set amount_approved = d.approved,
                offer_date = (v_created + ((v_final - v_created) * v_k / v_steps))
         where id = v_deal;

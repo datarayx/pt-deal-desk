@@ -14,7 +14,7 @@
 - [x] 1.4 Generated TypeScript types
 
 ## Phase 2 — Core modules
-- [ ] 2.1 Settings (stages, facility types, KYC checklists, recipients, reminder days, fee defaults)
+- [x] 2.1 Settings (stages, facility types, KYC checklists, recipients, reminder days, fee defaults)
 - [ ] 2.2 Financiers + requirement templates
 - [ ] 2.3 Referrers
 - [ ] 2.4 Clients list + multi-step create (individual/company + directors)
