@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import { requireSupabasePublicEnv } from "@/lib/supabase/env";
 
@@ -10,9 +11,12 @@ import { requireSupabasePublicEnv } from "@/lib/supabase/env";
  * signed-in user (RLS applies). Create one per request — never share it between requests.
  */
 export async function createSupabaseServerClient() {
-  // Read cookies first: it marks the caller as per-request, so prerendering stops here and
-  // the build never needs the keys (a missing key then fails at request time, not build time).
+  // Stop prerendering before touching Supabase: the client reads the clock (token expiry) and
+  // the session is per-request. With partialPrefetching, cookies() alone no longer stops the
+  // prerender, so connection() is needed too (Next 16 "blocking-prerender-current-time").
+  // This also means the build never needs the keys — a missing key fails at request time.
   const cookieStore = await cookies();
+  await connection();
   const { url, publishableKey } = requireSupabasePublicEnv();
 
   return createServerClient(url, publishableKey, {
