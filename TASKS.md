@@ -4,8 +4,8 @@
 - [x] 0.1 Scaffold Next.js + TS + Tailwind + shadcn/ui; ESLint/Prettier; folder structure
 - [x] 0.2 Design tokens (light/dark) + fonts per DESIGN.md; component restyle
 - [x] 0.3 App shell: sidebar, top bar, ⌘K, bell, user menu, theme toggle
-- [ ] 0.4 Supabase project, env vars, @supabase/ssr auth, login/reset pages
-- [ ] 0.5 Roles + RLS helper + route protection per role
+- [ ] 0.4 Supabase project, env vars, @supabase/ssr auth, login/reset pages — *code done; waiting for the P&T Supabase project + `.env.local` to apply the migration and test a live sign-in*
+- [ ] 0.5 Roles + RLS helper + route protection per role — *code done (proxy, `auth_role()`, role-filtered nav); same blocker as 0.4*
 
 ## Phase 1 — Data
 - [ ] 1.1 Migrations: all tables, enums, constraints, indexes, RLS policies

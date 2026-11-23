@@ -74,3 +74,16 @@ Add one line per decision: date · decision · reason. Never reopen a decision w
 - 2026-11-23 · Bell shows three static sample alerts and the shell shows a fictional demo CEO (Ngozi Adeyemi) until sign-in · Real alerts arrive in 4.1/4.2, the real user in 0.4.
 - 2026-11-23 · Placeholder pages for every SCREENS.md route name the TASKS.md task that builds them; `/` redirects to `/dashboard`, `/settings` to its first section · Nobody mistakes a placeholder for a bug.
 - 2026-11-23 · npm audit: 4 moderate advisories are in the shadcn CLI (dev only, via ts-morph → minimatch); `npm audit --omit=dev` is clean · The suggested `--force` fix downgrades shadcn to 1.0.
+
+### Tasks 0.4 / 0.5 — auth and roles
+- 2026-11-23 · Roles come only from `auth.users.app_metadata.role` (settable only with the secret key); the `on_auth_user_created` trigger creates the profile. No role → profile created inactive → no access · user_metadata is user-editable; an accidental public sign-up must get nothing.
+- 2026-11-23 · `public.auth_role()` (security definer, `search_path = ''`) returns the caller's role only if the profile is active; every RLS policy uses `(select public.auth_role())` · SECURITY.md helper; the subselect lets Postgres cache it per statement.
+- 2026-11-23 · profiles RLS: read own row; CEO reads and updates all; updates limited by column grants to full_name, role, is_active; a trigger blocks changing your own role or deactivating yourself · Prevents a CEO lock-out and self-promotion.
+- 2026-11-23 · Route protection in `src/proxy.ts`: refresh session (`getClaims()`), look up the active role in `profiles`, redirect signed-out → `/login?next=…`, no role → `/login?error=no-access`, accountant outside `/finance` → `/finance`. Rules live in `src/lib/auth/access.ts` and a test checks the nav config agrees with them · UI gate; RLS is the real guard.
+- 2026-11-23 · Fail closed: with no Supabase keys the proxy returns 503 with setup instructions for every page except /styleguide · Never serve the app unprotected because of a config mistake.
+- 2026-11-23 · Server Supabase client reads `cookies()` before checking env · Marks the shell as per-request so the build never needs keys.
+- 2026-11-23 · The shell's user parts (sidebar, top bar) load in `<Suspense>` with matching skeletons; pages stay partially prerendered · cacheComponents: session reads are request data.
+- 2026-11-23 · Password reset: request page → Supabase email → `/auth/callback` (PKCE `code` or `token_hash`) → `/update-password`; same response whether or not the email exists; new passwords ≥ 10 characters · No account enumeration; Supabase's default minimum (6) is too short.
+- 2026-11-23 · Demo users via `npm run demo:users` (`scripts/create-demo-users.mts`, Node 24 type stripping, reads `.env.local`); idempotent; fictional names Ngozi Adeyemi (CEO) and Tunde Bakare (Accountant). Demo credentials appear on /login only when `NEXT_PUBLIC_DEMO_MODE=true` · SEED_DATA.md.
+- 2026-11-23 · Session idle (60 min) and absolute (12 h) limits from DECISIONS are Supabase Auth settings (Pro plan: "Time-box user sessions" / "Inactivity timeout"); not enforced in code yet · Needs the project's plan confirmed; revisit in task 5.3.
+- 2026-11-23 · `/styleguide` stays public (no data) · Useful for design review without signing in.

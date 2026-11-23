@@ -27,6 +27,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { signOut } from "@/features/auth/actions";
 import type { Role } from "@/lib/navigation";
 
 export type ShellUser = { name: string; email: string; role: Role };
@@ -104,10 +105,13 @@ export function UserMenu({ user }: { user: ShellUser }) {
           </DropdownMenuSub>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        {/* Sign-in arrives in task 0.4; until then there is no session to end. */}
-        <DropdownMenuItem disabled>
-          <LogOutIcon /> Sign out
-        </DropdownMenuItem>
+        <form action={signOut}>
+          <DropdownMenuItem asChild>
+            <button type="submit" className="w-full">
+              <LogOutIcon /> Sign out
+            </button>
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );

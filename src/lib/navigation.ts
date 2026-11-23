@@ -31,7 +31,9 @@ import {
 // drawer, the ⌘K palette and the top-bar page title. `roles` is enforced for real in task 0.5
 // (proxy + RLS); here it only decides what is shown.
 
-export type Role = "ceo" | "accountant";
+import type { Role } from "@/lib/auth/access";
+
+export type { Role };
 
 export type NavItem = {
   title: string;

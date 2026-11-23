@@ -31,6 +31,11 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Command-line scripts report progress on stdout
+    files: ["scripts/**"],
+    rules: { "no-console": "off" },
+  },
   // Must be last: turns off ESLint rules that conflict with Prettier
   prettier,
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/types/database.ts"]),

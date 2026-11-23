@@ -1,18 +1,14 @@
+import { Suspense } from "react";
 import type * as React from "react";
 
-import { AppSidebar } from "@/components/shell/app-sidebar";
-import { TopBar } from "@/components/shell/top-bar";
-import type { ShellUser } from "@/components/shell/user-menu";
+import { AppSidebarSkeleton } from "@/components/shell/app-sidebar-skeleton";
+import { TopBarSkeleton } from "@/components/shell/top-bar-skeleton";
+import { UserSidebar } from "@/components/shell/user-sidebar";
+import { UserTopBar } from "@/components/shell/user-top-bar";
 
 // Authenticated app shell (DESIGN.md §4): sidebar + top bar + content (max 1440px).
-// Until sign-in lands (task 0.4) the shell shows a fictional demo CEO; 0.4/0.5 replace this with
-// the signed-in profile and protect every route here by role.
-const demoUser: ShellUser = {
-  name: "Ngozi Adeyemi",
-  email: "ceo@demo.ptdealdesk.ng",
-  role: "ceo",
-};
-
+// The proxy guarantees a signed-in user with access to this path; the user-specific parts
+// (role-filtered nav, name) read the session inside <Suspense> so pages stay prerendered.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -23,9 +19,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <div className="flex min-h-dvh">
-        <AppSidebar role={demoUser.role} homeHref="/dashboard" />
+        <Suspense fallback={<AppSidebarSkeleton />}>
+          <UserSidebar />
+        </Suspense>
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar user={demoUser} />
+          <Suspense fallback={<TopBarSkeleton />}>
+            <UserTopBar />
+          </Suspense>
           <main id="main" tabIndex={-1} className="flex-1 outline-none">
             <div className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
               {children}
