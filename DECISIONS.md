@@ -61,3 +61,16 @@ Add one line per decision: date · decision · reason. Never reopen a decision w
 - 2026-11-23 · Vitest 5 for unit tests (`npm test`); `@types/node` bumped to 24 to satisfy its peer range and match the Node 24 runtime · Vitest 5 requires @types/node ≥ 22.
 - 2026-11-23 · "One component per file" means one *exported* component; small private helpers (e.g. a swatch) may live beside it · Keeps files cohesive without dozens of 10-line files.
 - 2026-11-23 · Shared class strings for fields, popovers and menu rows live in `src/components/ui/styles.ts` · Inputs and selects line up exactly; plain module so Server Components can import it.
+
+### Task 0.3 — app shell
+- 2026-11-23 · Custom sidebar instead of shadcn's `sidebar` block · Adding the block would overwrite the restyled 0.2 components, and DESIGN.md's navy rail with a 3px cyan bar is simple to own.
+- 2026-11-23 · Sidebar: top group Overview · Clients · Deals · Repayments · Follow-ups, then "Partners" (Referrers, Financiers) and "Finance" (9 pages), with Outbox and Settings pinned at the bottom · Matches the prompt's sections; Outbox (SCREENS.md) had no section of its own.
+- 2026-11-23 · `src/lib/navigation.ts` is the single nav config (sidebar, drawer, ⌘K, breadcrumb) and carries each page's roles for task 0.5 · One place to add a page.
+- 2026-11-23 · Collapsed state lives in localStorage + a `data-sidebar-collapsed` attribute on `<html>`, restored before paint by a `beforeInteractive` inline script in the root layout; Tailwind variants `sidebar-collapsed:` / `sidebar-expanded:` read it · No flash, and no cookies (reading cookies would make every page dynamic under cacheComponents).
+- 2026-11-23 · Nav and breadcrumb read `usePathname()` inside `<Suspense>`; the fallback is the same nav with nothing highlighted · Next 16 cacheComponents can't know the path of dynamic routes (`/clients/[id]`) while prerendering the static shell; the build fails otherwise.
+- 2026-11-23 · Client shell components receive only `role`/`user` and read the nav config themselves · Icon components are functions and can't be passed from Server to Client Components.
+- 2026-11-23 · ⌘K/Ctrl+K and "/" open the palette; Ctrl/⌘+B toggles the sidebar; matching is word-prefix (`src/lib/command-filter.ts`), not cmdk's fuzzy default · Fuzzy matching surfaced unrelated pages ("trial" → Financiers).
+- 2026-11-23 · Command and Popover written by hand on cmdk / radix-ui with the 0.2 styles · `shadcn add command` would overwrite the restyled Dialog.
+- 2026-11-23 · Bell shows three static sample alerts and the shell shows a fictional demo CEO (Ngozi Adeyemi) until sign-in · Real alerts arrive in 4.1/4.2, the real user in 0.4.
+- 2026-11-23 · Placeholder pages for every SCREENS.md route name the TASKS.md task that builds them; `/` redirects to `/dashboard`, `/settings` to its first section · Nobody mistakes a placeholder for a bug.
+- 2026-11-23 · npm audit: 4 moderate advisories are in the shadcn CLI (dev only, via ts-morph → minimatch); `npm audit --omit=dev` is clean · The suggested `--force` fix downgrades shadcn to 1.0.

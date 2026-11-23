@@ -6,6 +6,10 @@
    on any subtree — the styleguide uses this to show light and dark side by side. */
 @custom-variant dark (&:is(.dark *));
 
+/* Desktop sidebar state, set on <html> by the app shell (see components/shell/sidebar-state.ts). */
+@custom-variant sidebar-collapsed (&:where(html[data-sidebar-collapsed] *));
+@custom-variant sidebar-expanded (&:where(html:not([data-sidebar-collapsed]) *));
+
 /* ==========================================================================
    1. Design tokens — docs/DESIGN.md §2–3. Hex values copied verbatim.
    Naming: DESIGN.md token names are used as-is, except where they clash with

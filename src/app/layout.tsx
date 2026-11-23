@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { SIDEBAR_RESTORE_SCRIPT } from "@/components/shell/sidebar-restore-script";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -30,7 +32,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: next-themes sets the theme class before React hydrates
+    // suppressHydrationWarning: next-themes and the sidebar script set attributes on <html>
+    // before React hydrates
     <html lang="en-NG" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
@@ -39,6 +42,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
+        {/* Restores the collapsed sidebar before first paint. `beforeInteractive` must live in
+            the root layout; Next injects it into <head> ahead of all app code. */}
+        <Script id="sidebar-state" strategy="beforeInteractive">
+          {SIDEBAR_RESTORE_SCRIPT}
+        </Script>
       </body>
     </html>
   );

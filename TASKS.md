@@ -3,7 +3,7 @@
 ## Phase 0 — Foundation
 - [x] 0.1 Scaffold Next.js + TS + Tailwind + shadcn/ui; ESLint/Prettier; folder structure
 - [x] 0.2 Design tokens (light/dark) + fonts per DESIGN.md; component restyle
-- [ ] 0.3 App shell: sidebar, top bar, ⌘K, bell, user menu, theme toggle
+- [x] 0.3 App shell: sidebar, top bar, ⌘K, bell, user menu, theme toggle
 - [ ] 0.4 Supabase project, env vars, @supabase/ssr auth, login/reset pages
 - [ ] 0.5 Roles + RLS helper + route protection per role
 
