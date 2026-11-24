@@ -15,8 +15,8 @@
 
 ## Phase 2 — Core modules
 - [x] 2.1 Settings (stages, facility types, KYC checklists, recipients, reminder days, fee defaults)
-- [ ] 2.2 Financiers + requirement templates
-- [ ] 2.3 Referrers
+- [x] 2.2 Financiers + requirement templates
+- [x] 2.3 Referrers
 - [ ] 2.4 Clients list + multi-step create (individual/company + directors)
 - [ ] 2.5 Client 360 (KYC docs, credit checks, exposures, deals, activity)
 - [ ] 2.6 Deals: Kanban + table + create sheet

@@ -1,7 +1,7 @@
 import type * as React from "react";
 
-/** Read-only key/value rows for a settings card; editing happens in a side sheet. */
-export function SettingsSummary({
+/** Read-only key/value rows inside a card (settings summaries, detail overviews). */
+export function DetailList({
   rows,
 }: {
   rows: { label: string; value: React.ReactNode; hint?: string }[];

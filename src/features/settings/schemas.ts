@@ -1,45 +1,17 @@
 import { z } from "zod";
 
+import {
+  email,
+  nairaAmount,
+  nigerianPhone,
+  optionalEmail,
+  optionalText,
+  percent,
+  requiredText as name,
+} from "@/lib/validation";
+
 // Shared by the Settings forms (client validation) and Server Actions (re-validated on the server).
 // Form number fields are strings; percentages are converted on the server, money stays a string.
-
-const name = (max: number, label = "Name") =>
-  z
-    .string()
-    .trim()
-    .min(1, `${label} is required.`)
-    .max(max, `${label} must be ${max} characters or fewer.`);
-
-const percent = (label: string) =>
-  z
-    .string()
-    .trim()
-    .regex(/^\d{1,3}(\.\d{1,3})?$/, `${label}: enter a percentage like 1.5`)
-    .refine((v) => Number(v) <= 100, `${label} can't be more than 100%.`);
-
-const nairaAmount = z
-  .string()
-  .trim()
-  .transform((v) => v.replace(/[₦,\s]/g, ""))
-  .pipe(z.string().regex(/^\d{1,16}(\.\d{1,2})?$/, "Enter an amount like 250000 or 250,000.00"));
-
-const optionalText = (max: number) =>
-  z
-    .string()
-    .trim()
-    .max(max, `Must be ${max} characters or fewer.`)
-    .transform((v) => (v === "" ? null : v));
-
-const nigerianPhone = z
-  .string()
-  .trim()
-  .transform((v) => v.replace(/[\s-]/g, ""))
-  .transform((v) => (v.startsWith("0") && v.length === 11 ? `+234${v.slice(1)}` : v))
-  .pipe(z.string().regex(/^(\+234[0-9]{10})?$/, "Use a Nigerian number like +234 803 123 4567"))
-  .transform((v) => (v === "" ? null : v));
-
-const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address."));
-
 // ---------------------------------------------------------------------------
 export const STAGE_COLORS = [
   "#7C93AB",
@@ -141,12 +113,8 @@ export const companyProfileSchema = z.object({
   tin: optionalText(20),
   address: optionalText(300),
   phone: nigerianPhone,
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.union([z.literal(""), z.email("Enter a valid email address.")]))
-    .transform((v) => (v === "" ? null : v)),
+  email: optionalEmail,
+
   website: optionalText(200),
 });
 export type CompanyProfileInput = z.input<typeof companyProfileSchema>;

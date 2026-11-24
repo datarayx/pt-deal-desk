@@ -5,7 +5,7 @@ import { MoneyText } from "@/components/common/money-text";
 import { FeesSheet } from "@/features/settings/components/fees-sheet";
 import { SettingsPanel } from "@/features/settings/components/settings-panel";
 import { SettingsPanelSkeleton } from "@/features/settings/components/settings-panel-skeleton";
-import { SettingsSummary } from "@/features/settings/components/settings-summary";
+import { DetailList } from "@/components/common/detail-list";
 import { getFeeSettings } from "@/features/settings/queries";
 import { referralTriggerLabel } from "@/features/settings/settings-values";
 
@@ -23,7 +23,7 @@ async function FeesSection() {
       action={<FeesSheet values={values} />}
       flush
     >
-      <SettingsSummary
+      <DetailList
         rows={[
           {
             label: "Client fee",

@@ -21,16 +21,19 @@ import type { ActionResult } from "@/lib/actions";
  * form, a toast on success and the sheet closing itself.
  * The RAW form values are sent; the server parses them with the same schema.
  */
-export function useSheetForm<S extends z.ZodType<FieldValues, FieldValues>>({
+export function useSheetForm<S extends z.ZodType<FieldValues, FieldValues>, R = undefined>({
   schema,
   defaultValues,
   action,
   successMessage,
+  onSuccess,
 }: {
   schema: S;
   defaultValues: z.input<S> & FieldValues;
-  action: (values: z.input<S>) => Promise<ActionResult>;
+  action: (values: z.input<S>) => Promise<ActionResult<R>>;
   successMessage: string;
+  /** Runs after a successful save, e.g. to open the new record. */
+  onSuccess?: (data: R | undefined) => void;
 }) {
   type Input = z.input<S> & FieldValues;
   const [open, setOpenState] = useState(false);
@@ -62,6 +65,7 @@ export function useSheetForm<S extends z.ZodType<FieldValues, FieldValues>>({
         if (result.ok) {
           toast.success(successMessage);
           setOpenState(false);
+          onSuccess?.(result.data);
           return;
         }
         if (result.fieldErrors) {

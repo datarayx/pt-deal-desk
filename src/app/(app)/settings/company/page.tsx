@@ -5,7 +5,7 @@ import { CompanySheet } from "@/features/settings/components/company-sheet";
 import { LogoUploader } from "@/features/settings/components/logo-uploader";
 import { SettingsPanel } from "@/features/settings/components/settings-panel";
 import { SettingsPanelSkeleton } from "@/features/settings/components/settings-panel-skeleton";
-import { SettingsSummary } from "@/features/settings/components/settings-summary";
+import { DetailList } from "@/components/common/detail-list";
 import { getCompanyProfile } from "@/features/settings/queries";
 
 export const metadata: Metadata = { title: "Company profile · Settings" };
@@ -23,7 +23,7 @@ async function CompanySection() {
         action={<CompanySheet values={company} />}
         flush
       >
-        <SettingsSummary
+        <DetailList
           rows={[
             { label: "Company name", value: company.name },
             {

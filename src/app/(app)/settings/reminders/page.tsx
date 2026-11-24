@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { RemindersSheet } from "@/features/settings/components/reminders-sheet";
 import { SettingsPanel } from "@/features/settings/components/settings-panel";
 import { SettingsPanelSkeleton } from "@/features/settings/components/settings-panel-skeleton";
-import { SettingsSummary } from "@/features/settings/components/settings-summary";
+import { DetailList } from "@/components/common/detail-list";
 import { getReminderSettings } from "@/features/settings/queries";
 import { reminderDayLabel, weekdayLabel } from "@/features/settings/settings-values";
 
@@ -24,7 +24,7 @@ async function RemindersSection() {
       action={<RemindersSheet values={values} />}
       flush
     >
-      <SettingsSummary
+      <DetailList
         rows={[
           {
             label: "Repayment reminders",

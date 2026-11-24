@@ -126,6 +126,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "referrers"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "clients_referrer_id_fkey"
+      columns: ["referrer_id"]
+isOneToOne: false
+      referencedRelation: "v_referrer_stats"
+      referencedColumns: ["referrer_id"]
     }
                   ]
                 },"company_directors": {
@@ -349,11 +355,23 @@ isOneToOne: false
       referencedRelation: "financiers"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "deals_financier_id_fkey"
+      columns: ["financier_id"]
+isOneToOne: false
+      referencedRelation: "v_financier_stats"
+      referencedColumns: ["financier_id"]
+    },{
       foreignKeyName: "deals_referrer_id_fkey"
       columns: ["referrer_id"]
 isOneToOne: false
       referencedRelation: "referrers"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "deals_referrer_id_fkey"
+      columns: ["referrer_id"]
+isOneToOne: false
+      referencedRelation: "v_referrer_stats"
+      referencedColumns: ["referrer_id"]
     },{
       foreignKeyName: "deals_stage_id_fkey"
       columns: ["stage_id"]
@@ -420,6 +438,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "financiers"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "financier_requirements_financier_id_fkey"
+      columns: ["financier_id"]
+isOneToOne: false
+      referencedRelation: "v_financier_stats"
+      referencedColumns: ["financier_id"]
     }
                   ]
                 },"financiers": {
@@ -749,6 +773,14 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_financier_stats": {
+                  Row: {
+                    "deal_count": number | null,"financier_id": string,"funded_count": number | null,"pipeline_count": number | null,"requirement_count": number | null,"total_disbursed": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_overdue_ageing": {
                   Row: {
                     "bucket": string | null,"days_overdue": number | null,"deal_id": string,"due_date": string,"instalment_no": number,"outstanding": number | null,"schedule_id": string,"total_due": number
@@ -790,6 +822,14 @@ isOneToOne: false
       referencedRelation: "deals"
       referencedColumns: ["id"]
     }
+                  ]
+                },"v_referrer_stats": {
+                  Row: {
+                    "amount_funded": string | null,"clients_referred": number | null,"deal_count": number | null,"deals_funded": number | null,"fees_earned": string | null,"fees_paid": string | null,"fees_payable": string | null,"fees_pending_count": number | null,"referrer_id": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
                   ]
                 }
           }
