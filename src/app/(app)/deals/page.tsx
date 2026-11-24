@@ -1,16 +1,34 @@
 import type { Metadata } from "next";
 
-import { PlaceholderPage } from "@/components/common/placeholder-page";
+import { PageHeader } from "@/components/common/page-header";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
+import { Suspense } from "react";
+import { DealsWorkspace } from "@/features/deals/components/deals-workspace";
+import { NewDealSheet } from "@/features/deals/components/new-deal-sheet";
+import { getDealsPageData } from "@/features/deals/queries";
 
 export const metadata: Metadata = { title: "Deals" };
 
+async function DealsSection() {
+  const data = await getDealsPageData();
+  return (
+    <>
+      <PageHeader
+        title="Deals"
+        description="Every deal from enquiry to full repayment, with stage history and financier requirements kept together."
+        actions={<NewDealSheet options={data.options} />}
+      />
+      <DealsWorkspace {...data} />
+    </>
+  );
+}
+
 export default function DealsPage() {
   return (
-    <PlaceholderPage
-      title="Deals"
-      description="Every deal from enquiry to full repayment."
-      task="2.6"
-      contents="Kanban and table views of the pipeline with stage totals in ₦, days in stage, deficiencies and stale flags, plus the New deal sheet."
-    />
+    <div className="space-y-6">
+      <Suspense fallback={<DataTableSkeleton columns={8} rows={6} />}>
+        <DealsSection />
+      </Suspense>
+    </div>
   );
 }

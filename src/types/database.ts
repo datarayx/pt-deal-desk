@@ -827,6 +827,20 @@ isOneToOne: false
       referencedColumns: ["referrer_id"]
     }
                   ]
+                },"v_client_reliability": {
+                  Row: {
+                    "average_days_late": number | null,"client_id": string,"current_overdue_amount": string | null,"default_count": number,"external_exposure": string | null,"latest_bureau": Database["public"]['Enums']["credit_bureau"] | null,"latest_check_date": string | null,"latest_rating": string | null,"max_overdue_days": number,"on_time_count": number,"on_time_percent": number | null,"outstanding_amount": string | null,"overdue_count": number,"paid_count": number,"reliability_badge": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "clients_referrer_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"v_fee_lines_finance": {
                   Row: {
                     "base_amount": number | null,"basis": Database["public"]['Enums']["fee_basis"] | null,"client_name": string | null,"computed_amount": number | null,"deal_id": string | null,"deal_reference": string | null,"earned_at": string | null,"fee_id": string | null,"fee_kind": Database["public"]['Enums']["fee_kind"] | null,"financier_name": string | null,"journal_entry_id": string | null,"status": Database["public"]['Enums']["fee_status"] | null,"trigger": Database["public"]['Enums']["fee_trigger"] | null,"value": number | null,"vat_amount": number | null,"wht_amount": number | null
@@ -956,6 +970,9 @@ isOneToOne: false
                            },
 "refresh_all_instalment_statuses":
 { Args: { "p_today"?: string }; Returns: number
+                           },
+"run_daily_reminders":
+{ Args: { "p_run_date"?: string }; Returns: Json
                            },
 "refresh_schedule_status":
 { Args: { "p_schedule_id": string,"p_today"?: string }; Returns: Database["public"]['Enums']["instalment_status"]

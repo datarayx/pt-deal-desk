@@ -26,6 +26,7 @@ export function FormSheet({
   description,
   submitLabel,
   pending,
+  submitDisabled = false,
   formError,
   onSubmit,
   children,
@@ -37,6 +38,7 @@ export function FormSheet({
   description?: React.ReactNode;
   submitLabel: string;
   pending: boolean;
+  submitDisabled?: boolean;
   formError?: string | null;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   children: React.ReactNode;
@@ -77,7 +79,7 @@ export function FormSheet({
                 Cancel
               </Button>
             </SheetClose>
-            <Button type="submit" pending={pending}>
+            <Button type="submit" pending={pending} disabled={submitDisabled}>
               {submitLabel}
             </Button>
           </SheetFooter>

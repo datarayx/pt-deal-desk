@@ -13,7 +13,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { DownloadIcon, SearchIcon, SearchXIcon, XIcon } from "lucide-react";
+import { DownloadIcon, FileSpreadsheetIcon, FileTextIcon, SearchIcon, SearchXIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useMemo, useState } from "react";
 import type * as React from "react";
@@ -36,7 +36,11 @@ import {
 } from "@/components/ui/table";
 import type { SavedView, ViewState } from "@/features/saved-views/schemas";
 import { csvFileName, toCsv } from "@/lib/export/csv";
+import { downloadExcel } from "@/lib/export/excel";
+import { downloadPdf } from "@/lib/export/pdf";
+import type { ExportTable } from "@/lib/export/types";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type DataTableProps<TData> = {
   /** Key for saved views, e.g. "financiers". */
@@ -61,6 +65,8 @@ type DataTableProps<TData> = {
   initialHidden?: string[];
   /** Accessible name for the table. */
   label: string;
+  /** Optional company details shown in Excel/PDF headers. */
+  exportCompany?: Pick<ExportTable, "companyName" | "companyAddress" | "companyEmail" | "companyPhone">;
 };
 
 const INTERACTIVE = "a, button, input, label, [role=checkbox], [role=menuitem]";
@@ -85,6 +91,7 @@ export function DataTable<TData>({
   initialSorting = [],
   initialHidden = [],
   label,
+  exportCompany,
 }: DataTableProps<TData>) {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -96,6 +103,7 @@ export function DataTable<TData>({
   );
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [activeViewId, setActiveViewId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
 
   const searched = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
@@ -181,12 +189,13 @@ export function DataTable<TData>({
     setActiveViewId(null);
   }
 
-  function exportCsv() {
+  function getExportTable(selectedOnly = false): ExportTable {
     const exportColumns = table.getVisibleLeafColumns().filter((c) => !c.columnDef.meta?.noExport);
-    const rows = selectedRows.length > 0 ? selectedRows : table.getPrePaginationRowModel().rows;
-    const csv = toCsv(
-      exportColumns.map((c) => c.columnDef.meta?.label ?? c.id),
-      rows.map((row) =>
+    const rows = selectedOnly && selectedRows.length > 0 ? selectedRows : table.getPrePaginationRowModel().rows;
+    return {
+      title: label,
+      columns: exportColumns.map((c) => c.columnDef.meta?.label ?? c.id),
+      rows: rows.map((row) =>
         exportColumns.map((c) => {
           const custom = c.columnDef.meta?.exportValue;
           if (custom) return custom(row.original);
@@ -195,7 +204,13 @@ export function DataTable<TData>({
           return typeof value === "string" || typeof value === "number" ? value : null;
         }),
       ),
-    );
+      ...exportCompany,
+    };
+  }
+
+  function exportCsv(selectedOnly = false) {
+    const tableData = getExportTable(selectedOnly);
+    const csv = toCsv(tableData.columns, tableData.rows);
     // BOM so Excel reads ₦ and accented names as UTF-8.
     const blob = new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -204,6 +219,36 @@ export function DataTable<TData>({
     link.download = csvFileName(exportName);
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function exportExcelFile(selectedOnly = false) {
+    setExporting("excel");
+    try {
+      await downloadExcel({ ...getExportTable(selectedOnly), title: exportName });
+    } catch {
+      toast.error("Excel export failed. Try again.");
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function exportPdfFile(selectedOnly = false) {
+    setExporting("pdf");
+    try {
+      await downloadPdf({ ...getExportTable(selectedOnly), title: label });
+    } catch {
+      toast.error("PDF export failed. Try again.");
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  function exportButtons(selectedOnly = false) {
+    return <>
+      <Button variant="outline" size="sm" onClick={() => exportCsv(selectedOnly)}><DownloadIcon /> CSV</Button>
+      <Button variant="outline" size="sm" pending={exporting === "excel"} disabled={exporting !== null} onClick={() => void exportExcelFile(selectedOnly)}><FileSpreadsheetIcon /> Excel</Button>
+      <Button variant="outline" size="sm" pending={exporting === "pdf"} disabled={exporting !== null} onClick={() => void exportPdfFile(selectedOnly)}><FileTextIcon /> PDF</Button>
+    </>;
   }
 
   function onRowClick(event: React.MouseEvent<HTMLTableRowElement>, row: TData) {
@@ -229,9 +274,7 @@ export function DataTable<TData>({
             <span className="text-small font-medium">
               <span className="num">{selectedRows.length}</span> selected
             </span>
-            <Button variant="outline" size="sm" onClick={exportCsv}>
-              <DownloadIcon /> Export selected
-            </Button>
+            {exportButtons(true)}
             <Button variant="ghost" size="sm" onClick={() => setRowSelection({})}>
               Clear selection
             </Button>
@@ -283,11 +326,7 @@ export function DataTable<TData>({
             />
           )}
           <DataTableViewOptions table={table} />
-          {selectedRows.length === 0 && (
-            <Button variant="outline" size="sm" onClick={exportCsv}>
-              <DownloadIcon /> Export
-            </Button>
-          )}
+          {selectedRows.length === 0 && exportButtons()}
         </div>
       </div>
 

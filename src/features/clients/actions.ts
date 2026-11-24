@@ -1,13 +1,20 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { z } from "zod";
 
 import { maskId } from "@/features/clients/options";
-import { newClientSchema } from "@/features/clients/schemas";
+import {
+  clientDocumentUpdateSchema,
+  clientDocumentUploadSchema,
+  creditCheckSchema,
+  newClientSchema,
+} from "@/features/clients/schemas";
 import { type ActionResult, friendlyDbError, issuesToFieldErrors } from "@/lib/actions";
 import { requireRole } from "@/lib/auth/session";
+import { lagosToday } from "@/lib/validation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Json } from "@/types/database";
+import type { Json, TablesInsert } from "@/types/database";
 
 /** Create a client from the New Client wizard (one transaction in create_client). */
 export async function createClient(input: unknown): Promise<ActionResult<{ id: string }>> {
@@ -139,4 +146,287 @@ export async function findPerson(
       },
     },
   };
+}
+
+async function refreshClientKycStatus(clientId: string) {
+  const supabase = await createSupabaseServerClient();
+  const [clientResult, typesResult, documentsResult, directorsResult] = await Promise.all([
+    supabase.from("clients").select("client_type, kyc_status").eq("id", clientId).maybeSingle(),
+    supabase.from("kyc_document_types").select("id, client_type, is_required"),
+    supabase
+      .from("client_documents")
+      .select("document_type_id, individual_profile_id, status, expiry_date")
+      .eq("client_id", clientId),
+    supabase
+      .from("company_directors")
+      .select("individual_profile_id")
+      .eq("company_client_id", clientId),
+  ]);
+  for (const result of [clientResult, typesResult, documentsResult, directorsResult]) {
+    if (result.error) throw new Error(result.error.message);
+  }
+  const client = clientResult.data;
+  if (!client) return;
+
+  const requiredTypes = (typesResult.data ?? []).filter((type) => type.is_required);
+  const expectedSlots = requiredTypes.flatMap((type) => {
+    if (type.client_type === client.client_type) return [`client:${type.id}`];
+    if (client.client_type !== "company" || type.client_type !== "individual") return [];
+    return (directorsResult.data ?? []).map(
+      (director) => `${director.individual_profile_id}:${type.id}`,
+    );
+  });
+  const today = lagosToday();
+  const complete = expectedSlots.every((slot) => {
+    const [personId, typeId] = slot.split(":");
+    return (documentsResult.data ?? []).some(
+      (document) =>
+        (document.individual_profile_id ?? "client") ===
+          (personId === "client" ? "client" : personId) &&
+        document.document_type_id === typeId &&
+        (document.status === "received" || document.status === "verified") &&
+        (!document.expiry_date || document.expiry_date >= today),
+    );
+  });
+
+  const nextStatus = complete ? "submitted" : "incomplete";
+  if (client.kyc_status !== "verified" && client.kyc_status !== nextStatus) {
+    const { error } = await supabase
+      .from("clients")
+      .update({ kyc_status: nextStatus })
+      .eq("id", clientId);
+    if (error) throw new Error(error.message);
+  }
+}
+
+function validateClientPath(clientId: string, path: string, bucket: string) {
+  return (
+    path.startsWith(`${clientId}/`) &&
+    (bucket === "kyc" || bucket === "credit-reports") &&
+    /^[A-Za-z0-9/_.\-]+$/.test(path)
+  );
+}
+
+export async function saveClientDocument(input: unknown): Promise<ActionResult> {
+  const user = await requireRole("ceo");
+  const parsed = clientDocumentUploadSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "The document details are invalid." };
+  const { client_id, document_id, expiry_date, file_path } = parsed.data;
+  if (!validateClientPath(client_id, file_path, "kyc")) {
+    return { ok: false, error: "That document path is not valid for this client." };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data: document, error: readError } = await supabase
+    .from("client_documents")
+    .select("id, client_id, file_path")
+    .eq("id", document_id)
+    .eq("client_id", client_id)
+    .maybeSingle();
+  if (readError) return { ok: false, error: friendlyDbError(readError, "this document") };
+  if (!document) return { ok: false, error: "This document checklist item no longer exists." };
+
+  const status = expiry_date && expiry_date < lagosToday() ? "expired" : "received";
+  const { error } = await supabase
+    .from("client_documents")
+    .update({
+      file_path,
+      expiry_date,
+      status,
+      verified_by: null,
+      verified_at: null,
+    })
+    .eq("id", document_id)
+    .eq("client_id", client_id);
+  if (error) return { ok: false, error: friendlyDbError(error, "this document") };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "update",
+    entity_type: "client_document",
+    entity_id: document_id,
+    before: { file_path: document.file_path },
+    after: { file_path, expiry_date, status },
+  });
+  await refreshClientKycStatus(client_id);
+  refresh();
+  return { ok: true };
+}
+
+export async function updateClientDocumentExpiry(input: unknown): Promise<ActionResult> {
+  const user = await requireRole("ceo");
+  const parsed = clientDocumentUpdateSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Enter a valid expiry date." };
+  const { client_id, document_id, expiry_date } = parsed.data;
+  const supabase = await createSupabaseServerClient();
+  const { data: document, error: readError } = await supabase
+    .from("client_documents")
+    .select("id, file_path, status")
+    .eq("id", document_id)
+    .eq("client_id", client_id)
+    .maybeSingle();
+  if (readError) return { ok: false, error: friendlyDbError(readError, "this document") };
+  if (!document) return { ok: false, error: "This document checklist item no longer exists." };
+  const nextStatus = !document.file_path
+    ? "missing"
+    : expiry_date && expiry_date < lagosToday()
+      ? "expired"
+      : document.status === "verified"
+        ? "verified"
+        : "received";
+  const { error } = await supabase
+    .from("client_documents")
+    .update({ expiry_date, status: nextStatus })
+    .eq("id", document_id)
+    .eq("client_id", client_id);
+  if (error) return { ok: false, error: friendlyDbError(error, "this document") };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "update",
+    entity_type: "client_document",
+    entity_id: document_id,
+    before: { expiry_date: null },
+    after: { expiry_date, status: nextStatus },
+  });
+  await refreshClientKycStatus(client_id);
+  refresh();
+  return { ok: true };
+}
+
+export async function verifyClientDocument(input: unknown): Promise<ActionResult> {
+  const user = await requireRole("ceo");
+  const parsed = clientDocumentUpdateSchema
+    .pick({ client_id: true, document_id: true })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, error: "That document is not valid." };
+  const { client_id, document_id } = parsed.data;
+  const supabase = await createSupabaseServerClient();
+  const { data: document, error: readError } = await supabase
+    .from("client_documents")
+    .select("id, file_path, expiry_date")
+    .eq("id", document_id)
+    .eq("client_id", client_id)
+    .maybeSingle();
+  if (readError) return { ok: false, error: friendlyDbError(readError, "this document") };
+  if (!document?.file_path) return { ok: false, error: "Upload the document before verifying it." };
+  if (document.expiry_date && document.expiry_date < lagosToday()) {
+    return { ok: false, error: "This document has expired. Upload a current copy first." };
+  }
+  const { error } = await supabase
+    .from("client_documents")
+    .update({ status: "verified", verified_by: user.id, verified_at: new Date().toISOString() })
+    .eq("id", document_id)
+    .eq("client_id", client_id);
+  if (error) return { ok: false, error: friendlyDbError(error, "this document") };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "update",
+    entity_type: "client_document",
+    entity_id: document_id,
+    after: { status: "verified" },
+  });
+  await refreshClientKycStatus(client_id);
+  refresh();
+  return { ok: true };
+}
+
+export async function addCreditCheck(input: unknown): Promise<ActionResult<{ id: string }>> {
+  await requireRole("ceo");
+  const parsed = creditCheckSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Check the credit check details.",
+      fieldErrors: issuesToFieldErrors(parsed.error.issues),
+    };
+  }
+  const value = parsed.data;
+  if (
+    value.report_file_path &&
+    !validateClientPath(value.client_id, value.report_file_path, "credit-reports")
+  ) {
+    return { ok: false, error: "That report path is not valid for this client." };
+  }
+  const supabase = await createSupabaseServerClient();
+  const creditInsert = {
+    client_id: value.client_id,
+    bureau: value.bureau,
+    check_date: value.check_date,
+    rating: value.rating,
+    score: value.score,
+    total_exposure: value.total_exposure,
+    delinquent_facilities: value.delinquent_facilities,
+    remarks: value.remarks,
+    report_file_path: value.report_file_path,
+  } as unknown as TablesInsert<"credit_checks">;
+  const { data: check, error } = await supabase
+    .from("credit_checks")
+    .insert(creditInsert)
+    .select("id")
+    .single();
+  if (error || !check) return { ok: false, error: friendlyDbError(error, "this credit check") };
+
+  if (value.exposures.length > 0) {
+    const exposureInsert = value.exposures.map((exposure) => ({
+      client_id: value.client_id,
+      lender_name: exposure.lender_name,
+      facility_type: exposure.facility_type,
+      amount: exposure.amount,
+      outstanding: exposure.outstanding,
+      status: exposure.status,
+    })) as unknown as TablesInsert<"external_exposures">[];
+    const { error: exposureError } = await supabase
+      .from("external_exposures")
+      .insert(exposureInsert);
+    if (exposureError) return { ok: false, error: friendlyDbError(exposureError, "the exposures") };
+  }
+  refresh();
+  return { ok: true, data: { id: check.id } };
+}
+
+const signedFileSchema = z.object({
+  client_id: z.uuid(),
+  bucket: z.enum(["kyc", "credit-reports"]),
+  path: z
+    .string()
+    .regex(/^[A-Za-z0-9/_.\-]+$/)
+    .max(300),
+});
+
+export async function getClientSignedFileUrl(
+  input: unknown,
+): Promise<ActionResult<{ url: string }>> {
+  const user = await requireRole("ceo");
+  const parsed = signedFileSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "That file is not valid." };
+  const { client_id, bucket, path } = parsed.data;
+  if (!validateClientPath(client_id, path, bucket))
+    return { ok: false, error: "That file is not valid." };
+
+  const supabase = await createSupabaseServerClient();
+  const query =
+    bucket === "kyc"
+      ? supabase
+          .from("client_documents")
+          .select("id")
+          .eq("client_id", client_id)
+          .eq("file_path", path)
+          .maybeSingle()
+      : supabase
+          .from("credit_checks")
+          .select("id")
+          .eq("client_id", client_id)
+          .eq("report_file_path", path)
+          .maybeSingle();
+  const { data: fileRecord, error: recordError } = await query;
+  if (recordError) return { ok: false, error: friendlyDbError(recordError, "this file") };
+  if (!fileRecord) return { ok: false, error: "That file is no longer attached to this client." };
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+  if (error || !data?.signedUrl) return { ok: false, error: "The file could not be opened." };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "signed_url",
+    entity_type: bucket === "kyc" ? "client_document" : "credit_check",
+    entity_id: fileRecord.id,
+    after: { bucket, path },
+  });
+  return { ok: true, data: { url: data.signedUrl } };
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { RemindersSheet } from "@/features/settings/components/reminders-sheet";
+import { RunRemindersButton } from "@/features/settings/components/run-reminders-button";
 import { SettingsPanel } from "@/features/settings/components/settings-panel";
 import { SettingsPanelSkeleton } from "@/features/settings/components/settings-panel-skeleton";
 import { DetailList } from "@/components/common/detail-list";
@@ -21,7 +22,12 @@ async function RemindersSection() {
     <SettingsPanel
       title="Reminder timings"
       description="When repayment reminders, overdue summaries and stale-deal alerts go out to the notification recipients."
-      action={<RemindersSheet values={values} />}
+      action={
+        <div className="flex flex-wrap justify-end gap-2">
+          {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && <RunRemindersButton />}
+          <RemindersSheet values={values} />
+        </div>
+      }
       flush
     >
       <DetailList

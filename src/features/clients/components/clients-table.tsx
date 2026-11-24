@@ -22,7 +22,7 @@ import {
 import type { ClientListRow } from "@/features/clients/queries";
 import type { SavedView } from "@/features/saved-views/schemas";
 import { formatDate } from "@/lib/format/date";
-import { kycStatus } from "@/lib/status";
+import { kycStatus, reliability } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
 type Row = ClientListRow;
@@ -73,6 +73,12 @@ const columns: ColumnDef<Row>[] = [
     filterFn: facetFilter<Row>(),
     header: ({ column }) => <DataTableColumnHeader column={column} title="KYC" />,
     cell: ({ row }) => <StatusBadge status={kycStatus[row.original.kyc_status]} />,
+  },
+  {
+    accessorKey: "reliability_badge",
+    meta: { label: "Reliability", exportValue: (r) => reliability[r.reliability_badge].label },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Reliability" />,
+    cell: ({ row }) => <StatusBadge status={reliability[row.original.reliability_badge]} />,
   },
   {
     id: "documents",

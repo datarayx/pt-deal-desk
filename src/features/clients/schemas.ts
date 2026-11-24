@@ -10,6 +10,7 @@ import {
   ageInYears,
   elevenDigits,
   lagosToday,
+  nairaAmount,
   nigerianPhone,
   normaliseCacNumber,
   optionalDate,
@@ -229,3 +230,56 @@ export const newClientSchema = z
   });
 export type NewClientInput = z.input<typeof newClientSchema>;
 export type NewClientOutput = z.output<typeof newClientSchema>;
+
+const nullableAmount = z
+  .union([z.literal(""), nairaAmount])
+  .transform((v) => (v === "" ? null : v));
+
+export const clientDocumentUpdateSchema = z.object({
+  client_id: z.uuid(),
+  document_id: z.uuid(),
+  expiry_date: optionalDate("Expiry date"),
+});
+
+export const clientDocumentUploadSchema = clientDocumentUpdateSchema.extend({
+  file_path: z
+    .string()
+    .regex(/^[A-Za-z0-9/_.\-]+$/)
+    .max(300),
+});
+
+export const creditCheckSchema = z.object({
+  client_id: z.uuid(),
+  bureau: z.enum(["CRC", "FirstCentral", "CreditRegistry", "Other"]),
+  check_date: z.iso.date("Enter a valid check date."),
+  rating: optionalText(40),
+  score: z
+    .union([z.literal(""), z.string().regex(/^\d{1,4}$/, "Score must be a whole number.")])
+    .transform((v) => (v === "" ? null : Number(v))),
+  total_exposure: nullableAmount,
+  delinquent_facilities: z
+    .string()
+    .regex(/^\d{1,3}$/, "Enter a whole number.")
+    .transform(Number),
+  remarks: optionalText(2000),
+  report_file_path: z
+    .union([
+      z.literal(""),
+      z
+        .string()
+        .regex(/^[A-Za-z0-9/_.\-]+$/)
+        .max(300),
+    ])
+    .transform((v) => (v === "" ? null : v)),
+  exposures: z
+    .array(
+      z.object({
+        lender_name: requiredText(160, "Lender name"),
+        facility_type: optionalText(120),
+        amount: nairaAmount,
+        outstanding: nairaAmount,
+        status: z.enum(["active", "closed", "delinquent"]),
+      }),
+    )
+    .max(50),
+});

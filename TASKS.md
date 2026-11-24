@@ -18,24 +18,24 @@
 - [x] 2.2 Financiers + requirement templates
 - [x] 2.3 Referrers
 - [x] 2.4 Clients list + multi-step create (individual/company + directors)
-- [ ] 2.5 Client 360 (KYC docs, credit checks, exposures, deals, activity)
-- [ ] 2.6 Deals: Kanban + table + create sheet
-- [ ] 2.7 Deal detail: requirements/deficiencies, stage moves, decline/negotiate, disburse
-- [ ] 2.8 Repayment schedule generation + repayments page + proof upload + confirm
-- [ ] 2.9 Follow-up tasks + call log
+- [x] 2.5 Client 360 (KYC docs, credit checks, exposures, deals, activity)
+- [x] 2.6 Deals: Kanban + table + create sheet
+- [x] 2.7 Deal detail: requirements/deficiencies, stage moves, decline/negotiate, disburse
+- [x] 2.8 Repayment schedule generation + repayments page + proof upload + confirm
+- [x] 2.9 Follow-up tasks + call log
 
 ## Phase 3 — Money
-- [ ] 3.1 Chart of accounts + journals engine (balanced, period lock)
-- [ ] 3.2 Fee rules + automatic recognition triggers
-- [ ] 3.3 Receivables, payables, receipts, payments, expenses
-- [ ] 3.4 Reports: trial balance, P&L, financial position, cash flows
-- [ ] 3.5 Excel + PDF export for all reports and tables
+- [x] 3.1 Chart of accounts + journals engine (balanced, period lock)
+- [x] 3.2 Fee rules + automatic recognition triggers
+- [x] 3.3 Receivables, payables, receipts, payments, expenses
+- [x] 3.4 Reports: trial balance, P&L, financial position, cash flows
+- [x] 3.5 Excel + PDF export for all reports and tables
 
 ## Phase 4 — Intelligence & alerts
-- [ ] 4.1 Daily pg_cron job: due/overdue/stale → alerts + outbox + follow-up tasks
-- [ ] 4.2 Bell dropdown + Outbox page
-- [ ] 4.3 Reliability scoring view + badges
-- [ ] 4.4 CEO dashboard + Finance dashboard with charts
+- [x] 4.1 Daily pg_cron job: due/overdue/stale → alerts + outbox + follow-up tasks
+- [x] 4.2 Bell dropdown + Outbox page
+- [x] 4.3 Reliability scoring view + badges
+- [x] 4.4 CEO dashboard + Finance dashboard with charts
 
 ## Phase 5 — Polish & ship
 - [ ] 5.1 UI polish pass (every screen vs DESIGN.md)

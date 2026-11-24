@@ -53,3 +53,39 @@ with
       ('locked periods', 'months to 3 ago', (select coalesce(min(period) || '..' || max(period), 'none') from public.periods where is_locked))
   )
 select check_name, expected, actual from checks;
+
+-- Hard assertions used by CI/demo verification as well as the human-readable checks above.
+do $$
+declare
+  v_year text := extract(year from public.lagos_today())::text;
+  v_dr numeric;
+  v_cr numeric;
+  v_assets numeric;
+  v_liabilities numeric;
+  v_equity numeric;
+begin
+  select coalesce(sum(debit), 0), coalesce(sum(credit), 0)
+    into v_dr, v_cr
+  from public.trial_balance(v_year || '-01', v_year || '-12');
+  if v_dr <> v_cr then
+    raise exception 'Seed trial balance is out of balance: debits % vs credits %', v_dr, v_cr;
+  end if;
+
+  select coalesce(sum(balance) filter (where type = 'asset'), 0),
+         coalesce(sum(balance) filter (where type = 'liability'), 0),
+         coalesce(sum(balance) filter (where type = 'equity'), 0)
+    into v_assets, v_liabilities, v_equity
+  from public.v_account_balances;
+  if v_assets <> v_liabilities + v_equity
+      + coalesce((select sum(credit - debit) from public.journal_lines l
+                  join public.journal_entries e on e.id = l.entry_id
+                  join public.accounts a on a.id = l.account_id
+                  where e.posted and a.type = 'income'), 0)
+      - coalesce((select sum(debit - credit) from public.journal_lines l
+                  join public.journal_entries e on e.id = l.entry_id
+                  join public.accounts a on a.id = l.account_id
+                  where e.posted and a.type = 'expense'), 0) then
+    raise exception 'Seed balance sheet is out of balance: assets % vs liabilities + equity + profit %',
+      v_assets, v_liabilities + v_equity;
+  end if;
+end $$;
