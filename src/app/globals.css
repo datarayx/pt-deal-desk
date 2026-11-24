@@ -302,6 +302,24 @@
   --text-caption--line-height: 1rem;
 }
 
+/* Sign-in screens only (DECISIONS.md): a fixed navy/aqua palette that doesn't follow the app
+   theme. auth-muted (#71839A) is for icons and borders; small text uses auth-subtle (≥ 4.5:1). */
+@theme {
+  --color-auth-navy: #031b33;
+  --color-auth-navy-2: #06233d;
+  --color-auth-teal: #034a59;
+  --color-auth-aqua: #00e6d0;
+  --color-auth-cyan: #00f5d4;
+  --color-auth-canvas: #f7fafc;
+  --color-auth-ink: #29415a;
+  --color-auth-heading: #031b33;
+  --color-auth-muted: #71839a;
+  --color-auth-subtle: #56697f;
+  --color-auth-border: #d9e2ec;
+  --color-auth-on-navy: #b4c3d3;
+  --color-auth-error: #b42318;
+}
+
 /* Tabular figures for money, dates and any column of numbers */
 @utility num {
   font-variant-numeric: tabular-nums lining-nums;

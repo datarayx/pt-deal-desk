@@ -4,10 +4,10 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/features/auth/actions";
+import { AuthCard } from "@/features/auth/components/auth-card";
 import { FormAlert } from "@/features/auth/components/form-alert";
+import { authInputClass, FormField } from "@/features/auth/components/form-field";
 import { SubmitButton } from "@/features/auth/components/submit-button";
 import { initialAuthFormState } from "@/features/auth/schemas";
 
@@ -16,48 +16,43 @@ export function ResetRequestForm() {
   const sent = state.status === "success";
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1.5">
-        <h1 className="text-h1">Reset your password</h1>
-        <p className="text-body text-muted-foreground">
-          Enter your email and we&apos;ll send you a link to choose a new password.
-        </p>
+    <AuthCard
+      title="Reset your password"
+      description="Enter your email and we'll send you a link to choose a new password."
+    >
+      <div className="space-y-6">
+        {state.message && <FormAlert tone={sent ? "success" : "error"}>{state.message}</FormAlert>}
+
+        {!sent && (
+          <form action={action} className="space-y-5" noValidate>
+            <FormField id="email" label="Email" error={state.fieldErrors?.email}>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                autoFocus
+                required
+                defaultValue={state.email}
+                aria-invalid={state.fieldErrors?.email ? true : undefined}
+                aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
+                className={authInputClass}
+              />
+            </FormField>
+            <SubmitButton>Send reset link</SubmitButton>
+          </form>
+        )}
+
+        <Link
+          href="/login"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-sm text-[0.9375rem] font-medium text-auth-teal underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-auth-teal focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <ArrowLeftIcon className="size-4" aria-hidden /> Back to sign in
+        </Link>
       </div>
-
-      {state.message && <FormAlert tone={sent ? "success" : "error"}>{state.message}</FormAlert>}
-
-      {!sent && (
-        <form action={action} className="space-y-4" noValidate>
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              required
-              defaultValue={state.email}
-              aria-invalid={state.fieldErrors?.email ? true : undefined}
-              aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-              className="h-10"
-            />
-            {state.fieldErrors?.email && (
-              <p id="email-error" className="text-small text-danger">
-                {state.fieldErrors.email}
-              </p>
-            )}
-          </div>
-          <SubmitButton>Send reset link</SubmitButton>
-        </form>
-      )}
-
-      <Link
-        href="/login"
-        className="inline-flex items-center gap-1.5 text-small font-medium text-accent-ink hover:underline"
-      >
-        <ArrowLeftIcon className="size-3.5" aria-hidden /> Back to sign in
-      </Link>
-    </div>
+    </AuthCard>
   );
 }

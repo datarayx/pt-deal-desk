@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { AuthFormSkeleton } from "@/features/auth/components/auth-form-skeleton";
-import { type DemoAccount, LoginForm } from "@/features/auth/components/login-form";
+import type { DemoAccount } from "@/features/auth/components/demo-access-card";
+import { LoginCard } from "@/features/auth/components/login-card";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -28,7 +29,7 @@ function demoAccounts(): DemoAccount[] {
 export default function LoginPage() {
   return (
     <Suspense fallback={<AuthFormSkeleton />}>
-      <LoginForm demoAccounts={demoAccounts()} />
+      <LoginCard demoAccounts={demoAccounts()} />
     </Suspense>
   );
 }
