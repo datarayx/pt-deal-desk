@@ -95,6 +95,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "client_documents_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "client_documents_document_type_id_fkey"
       columns: ["document_type_id"]
 isOneToOne: false
@@ -153,6 +159,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "company_directors_company_client_id_fkey"
+      columns: ["company_client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "company_directors_individual_profile_id_fkey"
       columns: ["individual_profile_id"]
 isOneToOne: false
@@ -178,6 +190,12 @@ isOneToOne: false
 isOneToOne: true
       referencedRelation: "clients"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "company_profiles_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: true
+      referencedRelation: "v_client_list"
+      referencedColumns: ["id"]
     }
                   ]
                 },"credit_checks": {
@@ -197,6 +215,12 @@ isOneToOne: true
       columns: ["client_id"]
 isOneToOne: false
       referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "credit_checks_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
       referencedColumns: ["id"]
     }
                   ]
@@ -343,6 +367,12 @@ isOneToOne: false
       referencedRelation: "clients"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "deals_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "deals_facility_type_id_fkey"
       columns: ["facility_type_id"]
 isOneToOne: false
@@ -403,6 +433,12 @@ isOneToOne: false
       columns: ["client_id"]
 isOneToOne: false
       referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "external_exposures_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
       referencedColumns: ["id"]
     }
                   ]
@@ -509,6 +545,12 @@ isOneToOne: false
       columns: ["client_id"]
 isOneToOne: false
       referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "individual_profiles_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "v_client_list"
       referencedColumns: ["id"]
     }
                   ]
@@ -765,6 +807,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_client_list": {
+                  Row: {
+                    "active_deals": number | null,"bvn_masked": string | null,"client_type": Database["public"]['Enums']["client_type"],"company_type": Database["public"]['Enums']["company_type"] | null,"created_at": string,"deal_count": number | null,"director_count": number | null,"display_name": string,"email": string | null,"enquiry_source": Database["public"]['Enums']["enquiry_source"],"id": string,"kyc_status": Database["public"]['Enums']["kyc_status"],"latest_bureau": Database["public"]['Enums']["credit_bureau"] | null,"latest_check_date": string | null,"latest_rating": string | null,"nin_masked": string | null,"outstanding": string | null,"phone": string | null,"rc_number": string | null,"received_docs": number | null,"referrer_id": string | null,"referrer_name": string | null,"required_docs": number | null,"sector": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "clients_referrer_id_fkey"
+      columns: ["referrer_id"]
+isOneToOne: false
+      referencedRelation: "referrers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "clients_referrer_id_fkey"
+      columns: ["referrer_id"]
+isOneToOne: false
+      referencedRelation: "v_referrer_stats"
+      referencedColumns: ["referrer_id"]
+    }
+                  ]
                 },"v_fee_lines_finance": {
                   Row: {
                     "base_amount": number | null,"basis": Database["public"]['Enums']["fee_basis"] | null,"client_name": string | null,"computed_amount": number | null,"deal_id": string | null,"deal_reference": string | null,"earned_at": string | null,"fee_id": string | null,"fee_kind": Database["public"]['Enums']["fee_kind"] | null,"financier_name": string | null,"journal_entry_id": string | null,"status": Database["public"]['Enums']["fee_status"] | null,"trigger": Database["public"]['Enums']["fee_trigger"] | null,"value": number | null,"vat_amount": number | null,"wht_amount": number | null
@@ -843,6 +905,9 @@ isOneToOne: false
 "confirm_repayment_report":
 { Args: { "p_confirmed_at"?: string,"p_note"?: string,"p_report_id": string }; Returns: Database["public"]['Enums']["instalment_status"]
                            },
+"create_client":
+{ Args: { "p": Json }; Returns: string
+                           },
 "disburse_deal":
 { Args: { "p_amount": number,"p_at"?: string,"p_deal_id": string,"p_disbursed_on": string,"p_first_repayment_date": string,"p_frequency": Database["public"]['Enums']["repayment_frequency"] }; Returns: number
                            },
@@ -861,6 +926,12 @@ isOneToOne: false
                            },
 "is_period_locked":
 { Args: { "p_period": string }; Returns: boolean
+                           },
+"jsonb_pick":
+{ Args: { "p": Json,"p_keys": (string)[] }; Returns: Json
+                           },
+"kyc_save_person":
+{ Args: { "p": Json,"p_client_id": string,"p_mode": string }; Returns: string
                            },
 "lagos_noon":
 { Args: { "p_day": string }; Returns: string

@@ -1,16 +1,39 @@
+import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
 
-import { PlaceholderPage } from "@/components/common/placeholder-page";
+import { PageHeader } from "@/components/common/page-header";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
+import { Button } from "@/components/ui/button";
+import { ClientsTable } from "@/features/clients/components/clients-table";
+import { getClients } from "@/features/clients/queries";
+import { getSavedViews } from "@/features/saved-views/queries";
 
 export const metadata: Metadata = { title: "Clients" };
 
+async function ClientsSection() {
+  const [clients, savedViews] = await Promise.all([getClients(), getSavedViews("clients")]);
+  return <ClientsTable clients={clients} savedViews={savedViews} />;
+}
+
 export default function ClientsPage() {
   return (
-    <PlaceholderPage
-      title="Clients"
-      description="Companies and individuals P&T is helping to raise funds."
-      task="2.4"
-      contents="Client table with name, type, sector, KYC status, latest credit rating, active deals, outstanding balance and referrer — with search, filters and export."
-    />
+    <div className="space-y-6">
+      <PageHeader
+        title="Clients"
+        description="Companies and individuals P&T raises finance for: their KYC, credit history and what they owe."
+        actions={
+          <Button asChild>
+            <Link href="/clients/new">
+              <PlusIcon /> New client
+            </Link>
+          </Button>
+        }
+      />
+      <Suspense fallback={<DataTableSkeleton columns={8} rows={10} />}>
+        <ClientsSection />
+      </Suspense>
+    </div>
   );
 }

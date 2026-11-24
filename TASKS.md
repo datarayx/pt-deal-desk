@@ -17,7 +17,7 @@
 - [x] 2.1 Settings (stages, facility types, KYC checklists, recipients, reminder days, fee defaults)
 - [x] 2.2 Financiers + requirement templates
 - [x] 2.3 Referrers
-- [ ] 2.4 Clients list + multi-step create (individual/company + directors)
+- [x] 2.4 Clients list + multi-step create (individual/company + directors)
 - [ ] 2.5 Client 360 (KYC docs, credit checks, exposures, deals, activity)
 - [ ] 2.6 Deals: Kanban + table + create sheet
 - [ ] 2.7 Deal detail: requirements/deficiencies, stage moves, decline/negotiate, disburse

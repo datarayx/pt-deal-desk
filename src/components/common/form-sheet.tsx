@@ -45,7 +45,16 @@ export function FormSheet({
     <Sheet open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent>
-        <form onSubmit={onSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={(event) => {
+            // The sheet renders in a portal, but React still bubbles events up the component
+            // tree: without this, a sheet opened inside another form would submit that form too.
+            event.stopPropagation();
+            onSubmit(event);
+          }}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             {description && <SheetDescription>{description}</SheetDescription>}
