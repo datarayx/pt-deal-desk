@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
-    // Room for a 1 MB company logo plus multipart overhead (DECISIONS.md).
-    serverActions: { bodySizeLimit: "2mb" },
+    // Room for a 1 MB company logo and a 20 MB staged workbook plus multipart overhead.
+    serverActions: { bodySizeLimit: "25mb" },
   },
   turbopack: {
     rules: {
@@ -19,3 +19,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
