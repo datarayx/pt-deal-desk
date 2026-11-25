@@ -12,7 +12,7 @@ const PUBLIC_PREFIXES = ["/login", "/reset-password", "/auth", "/styleguide"] as
 const ANY_ROLE_PREFIXES = ["/update-password"] as const;
 
 /** The accountant sees the books only — no clients, KYC, deals or repayments. */
-const ACCOUNTANT_PREFIXES = ["/finance"] as const;
+const ACCOUNTANT_PREFIXES = ["/finance", "/imports"] as const;
 
 function matches(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -54,3 +54,4 @@ export function safeNextPath(next: string | null | undefined, role: Role): strin
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
 }
+
