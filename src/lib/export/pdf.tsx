@@ -2,12 +2,12 @@
 
 import { Document, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
 
+import { getClientExportCompany, mergeExportCompany } from "@/lib/export/client-company";
+import { CompanyLetterhead } from "@/lib/export/letterhead";
 import type { ExportTable } from "@/lib/export/types";
 
 const styles = StyleSheet.create({
   page: { padding: 32, fontSize: 8, color: "#011A32", fontFamily: "Helvetica" },
-  company: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 3 },
-  contact: { fontSize: 8, color: "#56697F", marginBottom: 14 },
   title: { fontSize: 12, fontFamily: "Helvetica-Bold", marginBottom: 10 },
   table: {
     display: "flex",
@@ -30,14 +30,20 @@ const styles = StyleSheet.create({
 });
 
 function ExportPdfDocument({ table }: { table: ExportTable }) {
-  const contact = [table.companyAddress, table.companyPhone, table.companyEmail]
-    .filter(Boolean)
-    .join(" · ");
+  const company = {
+    companyName: table.companyName ?? "P&T Finance Consult Limited",
+    companyAddress: table.companyAddress ?? null,
+    companyEmail: table.companyEmail ?? null,
+    companyPhone: table.companyPhone ?? null,
+    companyWebsite: table.companyWebsite ?? null,
+    companyRcNumber: table.companyRcNumber ?? null,
+    companyTin: table.companyTin ?? null,
+    companyLogoDataUrl: table.companyLogoDataUrl ?? null,
+  };
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
-        <Text style={styles.company}>{table.companyName ?? "P&T Finance Consult Limited"}</Text>
-        {contact && <Text style={styles.contact}>{contact}</Text>}
+        <CompanyLetterhead company={company} />
         <Text style={styles.title}>{table.title}</Text>
         <View style={styles.table}>
           <View style={[styles.row, styles.header]}>
@@ -79,7 +85,9 @@ function safeFileName(value: string) {
 }
 
 export async function downloadPdf(table: ExportTable) {
-  const blob = await pdf(<ExportPdfDocument table={table} />).toBlob();
+  const company = await getClientExportCompany();
+  const brandedTable = mergeExportCompany(table, company) as ExportTable;
+  const blob = await pdf(<ExportPdfDocument table={brandedTable} />).toBlob();
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -87,3 +95,4 @@ export async function downloadPdf(table: ExportTable) {
   link.click();
   URL.revokeObjectURL(url);
 }
+
