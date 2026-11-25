@@ -41,6 +41,10 @@ export async function proxy(request: NextRequest) {
     return to("/login?error=no-access");
   }
 
+  // This route performs its own CEO/accountant role check. Let authenticated accountants reach
+  // it instead of treating the API pathname like a page and redirecting them to /finance.
+  if (pathname === "/api/export/company-profile") return response;
+
   if (pathname === "/" || isSignInPath(pathname)) return to(homeFor(role));
   if (!canAccess(role, pathname)) return to(homeFor(role));
 
@@ -53,3 +57,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
   ],
 };
+
