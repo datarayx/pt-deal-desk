@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 
 import { getClientExportCompany, mergeExportCompany } from "@/lib/export/client-company";
+import { excelExportCell, isNegativeExportCell } from "@/lib/export/format";
 import type { ExportTable } from "@/lib/export/types";
 
 function downloadBlob(blob: Blob, fileName: string) {
@@ -49,7 +50,15 @@ export async function downloadExcel(table: ExportTable) {
   header.font = { bold: true, color: { argb: "FFFFFFFF" } };
   header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF011A32" } };
   header.alignment = { vertical: "middle" };
-  for (const row of brandedTable.rows) sheet.addRow(row.map((cell) => cell ?? ""));
+  for (const row of brandedTable.rows) {
+    const excelRow = sheet.addRow(row.map((cell) => excelExportCell(cell) ?? ""));
+    row.forEach((cell, index) => {
+      if (!isNegativeExportCell(cell)) return;
+      const excelCell = excelRow.getCell(index + 1);
+      excelCell.font = { ...excelCell.font, color: { argb: "FFB42318" } };
+      excelCell.numFmt = "#,##0.##;[Red](#,##0.##);-";
+    });
+  }
   sheet.views = [{ state: "frozen", ySplit: 5 }];
   sheet.getColumn(1).width = Math.max(14, Math.min(42, brandedTable.columns[0]?.length ?? 14));
   for (let index = 2; index <= brandedTable.columns.length; index += 1) sheet.getColumn(index).width = 18;

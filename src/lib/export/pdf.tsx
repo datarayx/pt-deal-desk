@@ -3,6 +3,7 @@
 import { Document, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import { getClientExportCompany, mergeExportCompany } from "@/lib/export/client-company";
+import { isNegativeExportCell, pdfExportCell } from "@/lib/export/format";
 import { CompanyLetterhead } from "@/lib/export/letterhead";
 import type { ExportTable } from "@/lib/export/types";
 
@@ -26,6 +27,7 @@ const styles = StyleSheet.create({
   },
   header: { backgroundColor: "#011A32", color: "#FFFFFF", fontFamily: "Helvetica-Bold" },
   cell: { padding: 5, flexGrow: 1, flexBasis: 0 },
+  negative: { color: "#B42318" },
   footer: { marginTop: 12, color: "#56697F", fontSize: 7 },
 });
 
@@ -56,8 +58,11 @@ function ExportPdfDocument({ table }: { table: ExportTable }) {
           {table.rows.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
               {row.map((cell, cellIndex) => (
-                <Text key={`${rowIndex}-${cellIndex}`} style={styles.cell}>
-                  {cell === null || cell === undefined ? "" : String(cell)}
+                <Text
+                  key={`${rowIndex}-${cellIndex}`}
+                  style={[styles.cell, isNegativeExportCell(cell) ? styles.negative : undefined]}
+                >
+                  {pdfExportCell(cell)}
                 </Text>
               ))}
             </View>
