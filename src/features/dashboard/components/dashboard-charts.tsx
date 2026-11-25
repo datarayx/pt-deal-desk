@@ -115,55 +115,6 @@ export function PipelineChart({ data }: { data: PipelineChartRow[] }) {
   );
 }
 
-export function PipelineConversionChart({ data }: { data: PipelineChartRow[] }) {
-  const rows = data.filter((row) => row.count > 0);
-  return (
-    <ChartFrame label="Deal count by pipeline stage">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={rows}
-          layout="vertical"
-          margin={{ top: 8, right: 54, left: 8, bottom: 8 }}
-          barCategoryGap="24%"
-        >
-          <CartesianGrid horizontal={false} stroke="var(--border)" strokeOpacity={0.55} />
-          <XAxis
-            type="number"
-            allowDecimals={false}
-            tick={axisTick}
-            axisLine={false}
-            tickLine={false}
-            tickMargin={8}
-          />
-          <YAxis
-            type="category"
-            dataKey="stage"
-            width={116}
-            tick={axisTick}
-            axisLine={false}
-            tickLine={false}
-            tickMargin={8}
-          />
-          <Tooltip
-            cursor={{ fill: "var(--surface-subtle)", opacity: 0.65 }}
-            contentStyle={tooltipStyle}
-            formatter={(value) => [`${value} deal${Number(value) === 1 ? "" : "s"}`, "Volume"]}
-          />
-          <Bar
-            dataKey="count"
-            radius={[0, 8, 8, 0]}
-            barSize={22}
-            fill="var(--chart-2)"
-            isAnimationActive={false}
-          >
-            <LabelList dataKey="count" position="right" fill="var(--text-muted)" fontSize={11} />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartFrame>
-  );
-}
-
 export function FeesChart({ data }: { data: FeeChartRow[] }) {
   return (
     <div className="space-y-3">
