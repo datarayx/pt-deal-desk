@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     template: "%s · P&T Deal Desk",
   },
   description: "Clients, deals, repayments and books for P&T Finance Consult Limited.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -51,3 +55,4 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     </html>
   );
 }
+
