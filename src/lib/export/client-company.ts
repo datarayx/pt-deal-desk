@@ -39,10 +39,7 @@ export async function getClientExportCompany(): Promise<ExportCompany> {
   }
 }
 
-export function mergeExportCompany(
-  table: { [key: string]: unknown },
-  company: ExportCompany,
-) {
+export function mergeExportCompany(table: { [key: string]: unknown }, company: ExportCompany) {
   return {
     ...company,
     ...table,

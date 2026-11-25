@@ -92,12 +92,7 @@ export function PipelineChart({ data }: { data: PipelineChartRow[] }) {
             contentStyle={tooltipStyle}
             formatter={(value) => [formatNaira(Number(value ?? 0)) ?? "₦0.00", "Pipeline"]}
           />
-          <Bar
-            dataKey="value"
-            radius={[0, 8, 8, 0]}
-            barSize={22}
-            isAnimationActive={false}
-          >
+          <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={22} isAnimationActive={false}>
             {data.map((row) => (
               <Cell key={row.stage} fill={row.color ?? "var(--chart-1)"} />
             ))}
@@ -213,7 +208,7 @@ export function RepaymentsDueChart({ data }: { data: RepaymentChartRow[] }) {
             contentStyle={tooltipStyle}
             formatter={(value, name) => [
               name === "amount"
-                ? formatNaira(Number(value ?? 0)) ?? "₦0.00"
+                ? (formatNaira(Number(value ?? 0)) ?? "₦0.00")
                 : `${value} instalment${Number(value) === 1 ? "" : "s"}`,
               name === "amount" ? "Due" : "Instalments",
             ]}

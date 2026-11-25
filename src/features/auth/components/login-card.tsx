@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type * as React from "react";
 
@@ -19,6 +19,7 @@ type Field = "email" | "password";
 
 const linkErrors: Record<string, string> = {
   "link-expired": "That link has expired or was already used. Request a new one.",
+  "session-timeout": "You were signed out after 60 minutes without activity. Sign in again.",
 };
 
 /** Same rules as the server (signInSchema), checked before sending so mistakes show instantly. */
@@ -35,6 +36,9 @@ function validate(email: string, password: string): Partial<Record<Field, string
 
 // Reads ?next and ?error, so it must render inside <Suspense> (Next 16 cacheComponents).
 export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount[] }) {
+  useEffect(() => {
+    window.sessionStorage.removeItem("ptdd-session-started-at");
+  }, []);
   const params = useSearchParams();
   const [state, action, isPending] = useActionState(signIn, initialAuthFormState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -43,6 +47,7 @@ export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount
   // Controlled, so what was typed survives both inline validation and a failed sign-in.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [clientErrors, setClientErrors] = useState<Partial<Record<Field, string>>>({});
   const [edited, setEdited] = useState<Partial<Record<Field, boolean>>>({});
   const [demoEmail, setDemoEmail] = useState<string | null>(null);
@@ -153,6 +158,17 @@ export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount
             />
           </FormField>
 
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-auth-ink">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
+              className="size-4 rounded border-auth-border text-auth-teal accent-auth-teal focus:ring-2 focus:ring-auth-teal focus:ring-offset-2"
+            />
+            <span>Keep me signed in on this device</span>
+          </label>
+
           <AuthButton
             type="submit"
             pending={isPending && !demoEmail}
@@ -174,3 +190,4 @@ export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount
     </AuthCard>
   );
 }
+

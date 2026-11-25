@@ -135,7 +135,9 @@ export const updateUserSchema = z.object({
 });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
-export const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+// PDF and Excel exports can embed these formats consistently across runtimes.
+export const LOGO_TYPES = ["image/png", "image/jpeg"] as const;
 export const LOGO_MAX_BYTES = 1024 * 1024;
 
 export { nairaAmount };
+

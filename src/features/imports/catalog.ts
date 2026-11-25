@@ -1,9 +1,4 @@
-export type ImportDomain =
-  | "partners"
-  | "clients"
-  | "deals"
-  | "repayments"
-  | "accounting";
+export type ImportDomain = "partners" | "clients" | "deals" | "repayments" | "accounting";
 
 export type ImportMode = "historical" | "live";
 
@@ -165,23 +160,47 @@ export const importDefinitions: ImportDefinition[] = [
       {
         name: "documents",
         required: ["client_external_id", "document_type_name", "file_path"],
-        columns: ["client_external_id", "person_external_id", "document_type_name", "file_path", "expiry_date"],
+        columns: [
+          "client_external_id",
+          "person_external_id",
+          "document_type_name",
+          "file_path",
+          "expiry_date",
+        ],
         help: "Upload files to the private KYC bucket separately, then use the exact storage path here.",
       },
       {
         name: "credit_checks",
         required: ["client_external_id", "bureau", "check_date"],
-        columns: ["client_external_id", "bureau", "check_date", "rating", "score", "total_exposure", "delinquent_facilities", "remarks", "report_file_path"],
+        columns: [
+          "client_external_id",
+          "bureau",
+          "check_date",
+          "rating",
+          "score",
+          "total_exposure",
+          "delinquent_facilities",
+          "remarks",
+          "report_file_path",
+        ],
         help: "Credit reports are separate files. Use report_file_path only after the file is in storage.",
       },
       {
         name: "exposures",
         required: ["client_external_id", "lender_name", "amount", "outstanding", "status"],
-        columns: ["client_external_id", "lender_name", "facility_type", "amount", "outstanding", "status"],
+        columns: [
+          "client_external_id",
+          "lender_name",
+          "facility_type",
+          "amount",
+          "outstanding",
+          "status",
+        ],
         help: "One external lender exposure per row.",
       },
     ],
-    historicalWarning: "Historical client imports do not create alerts. KYC documents remain unverified until a CEO verifies them.",
+    historicalWarning:
+      "Historical client imports do not create alerts. KYC documents remain unverified until a CEO verifies them.",
   },
   {
     domain: "deals",
@@ -191,8 +210,41 @@ export const importDefinitions: ImportDefinition[] = [
     sheets: [
       {
         name: "deals",
-        required: ["external_id", "reference", "client_external_id", "financier_external_id", "facility_type_name", "amount_requested"],
-        columns: ["external_id", "reference", "client_external_id", "financier_external_id", "facility_type_name", "referrer_external_id", "amount_requested", "amount_approved", "amount_disbursed", "tenor_months", "interest_rate_monthly", "purpose", "collateral_type", "collateral_value", "guarantor_name", "guarantor_cheques", "other_fees_note", "offer_date", "disbursement_date", "first_repayment_date", "maturity_date", "repayment_frequency", "stage_name", "outcome", "decline_reason"],
+        required: [
+          "external_id",
+          "reference",
+          "client_external_id",
+          "financier_external_id",
+          "facility_type_name",
+          "amount_requested",
+        ],
+        columns: [
+          "external_id",
+          "reference",
+          "client_external_id",
+          "financier_external_id",
+          "facility_type_name",
+          "referrer_external_id",
+          "amount_requested",
+          "amount_approved",
+          "amount_disbursed",
+          "tenor_months",
+          "interest_rate_monthly",
+          "purpose",
+          "collateral_type",
+          "collateral_value",
+          "guarantor_name",
+          "guarantor_cheques",
+          "other_fees_note",
+          "offer_date",
+          "disbursement_date",
+          "first_repayment_date",
+          "maturity_date",
+          "repayment_frequency",
+          "stage_name",
+          "outcome",
+          "decline_reason",
+        ],
         help: "References use external IDs from the related sheets. Historical mode will not recognise fees automatically.",
       },
       {
@@ -208,7 +260,8 @@ export const importDefinitions: ImportDefinition[] = [
         help: "Activity rows are linked by the external ID of the client, deal or referrer.",
       },
     ],
-    historicalWarning: "Historical deals are loaded without disbursement automation; imported schedules and accounting entries remain explicit.",
+    historicalWarning:
+      "Historical deals are loaded without disbursement automation; imported schedules and accounting entries remain explicit.",
   },
   {
     domain: "repayments",
@@ -218,18 +271,46 @@ export const importDefinitions: ImportDefinition[] = [
     sheets: [
       {
         name: "schedules",
-        required: ["deal_external_id", "instalment_no", "due_date", "principal_due", "interest_due", "total_due", "status"],
-        columns: ["deal_external_id", "instalment_no", "due_date", "principal_due", "interest_due", "total_due", "status", "days_overdue"],
+        required: [
+          "deal_external_id",
+          "instalment_no",
+          "due_date",
+          "principal_due",
+          "interest_due",
+          "total_due",
+          "status",
+        ],
+        columns: [
+          "deal_external_id",
+          "instalment_no",
+          "due_date",
+          "principal_due",
+          "interest_due",
+          "total_due",
+          "status",
+          "days_overdue",
+        ],
         help: "Use this for existing schedules. It avoids regenerating a historical schedule with different terms.",
       },
       {
         name: "payments",
         required: ["deal_external_id", "instalment_no", "amount", "paid_on", "channel", "status"],
-        columns: ["deal_external_id", "instalment_no", "amount", "paid_on", "channel", "status", "proof_file_path", "confirmed_at", "confirmation_note"],
+        columns: [
+          "deal_external_id",
+          "instalment_no",
+          "amount",
+          "paid_on",
+          "channel",
+          "status",
+          "proof_file_path",
+          "confirmed_at",
+          "confirmation_note",
+        ],
         help: "Payments are imported as historical reports; proof files must already be in private storage.",
       },
     ],
-    historicalWarning: "Historical repayments do not re-run first-repayment fee recognition or reminder jobs.",
+    historicalWarning:
+      "Historical repayments do not re-run first-repayment fee recognition or reminder jobs.",
   },
   {
     domain: "accounting",
@@ -256,7 +337,8 @@ export const importDefinitions: ImportDefinition[] = [
         help: "Every journal must balance. Use either debit or credit on each line, never both.",
       },
     ],
-    historicalWarning: "Historical journals are posted as imported entries and do not create fee triggers.",
+    historicalWarning:
+      "Historical journals are posted as imported entries and do not create fee triggers.",
   },
 ];
 

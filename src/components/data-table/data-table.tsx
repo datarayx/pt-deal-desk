@@ -237,11 +237,7 @@ export function DataTable<TData>({
       ]
         .filter(Boolean)
         .join(" · ");
-      const preamble = [
-        [company.companyName],
-        ...(contact ? [[contact]] : []),
-        [],
-      ];
+      const preamble = [[company.companyName], ...(contact ? [[contact]] : []), []];
       const csv = toCsv(tableData.columns, tableData.rows, preamble);
       // BOM so Excel reads ₦ and accented names as UTF-8.
       const blob = new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" });

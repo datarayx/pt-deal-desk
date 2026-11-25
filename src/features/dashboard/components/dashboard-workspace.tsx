@@ -35,7 +35,7 @@ import type { DashboardData } from "@/features/dashboard/queries";
 import { percentageDelta, type DashboardKpi } from "@/features/dashboard/logic";
 import { repaymentStatus } from "@/lib/status";
 
-function deltaFor(metric: DashboardKpi, inverse = false): KpiDelta {
+function deltaFor(metric: DashboardKpi, inverse = false, label = "vs last month"): KpiDelta {
   const delta = percentageDelta(metric.current, metric.previous);
   const positive =
     delta.trend === "flat"
@@ -47,7 +47,7 @@ function deltaFor(metric: DashboardKpi, inverse = false): KpiDelta {
         : delta.trend === "up"
           ? "positive"
           : "negative";
-  return { ...delta, label: "vs last month", intent: positive };
+  return { ...delta, label, intent: positive };
 }
 
 function Widget({
@@ -125,7 +125,7 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
         <KpiCard
           label="Fees earned YTD"
           value={<MoneyText value={data.kpis.feesEarnedYtd.current as string} compact />}
-          delta={deltaFor(data.kpis.feesEarnedYtd)}
+          delta={deltaFor(data.kpis.feesEarnedYtd, false, "vs same period last year")}
         />
         <KpiCard
           label="Fees receivable"

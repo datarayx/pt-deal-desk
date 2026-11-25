@@ -54,6 +54,21 @@ export type PeriodRow = {
   posted_count: number;
 };
 
+export type LedgerRow = {
+  id: string;
+  entry_date: string;
+  period: string;
+  reference: string | null;
+  memo: string | null;
+  account_id: string;
+  account_code: string;
+  account_name: string;
+  account_type: Enums["account_type"];
+  debit: string;
+  credit: string;
+  running_balance: string;
+};
+
 export async function getAccountsPageData(): Promise<AccountRow[]> {
   await requireRole("ceo", "accountant");
   const supabase = await createSupabaseServerClient();
@@ -159,3 +174,59 @@ export async function getPeriodsPageData(): Promise<PeriodRow[]> {
       };
     });
 }
+
+export async function getLedgerPageData(): Promise<LedgerRow[]> {
+  await requireRole("ceo", "accountant");
+  const supabase = await createSupabaseServerClient();
+  const entriesResult = await supabase
+    .from("journal_entries")
+    .select("id, entry_date, period, reference, memo")
+    .eq("posted", true)
+    .order("entry_date")
+    .order("created_at")
+    .order("id");
+  if (entriesResult.error) throw new Error(entriesResult.error.message);
+  const entryIds = entriesResult.data.map((entry) => entry.id);
+  if (!entryIds.length) return [];
+
+  const linesResult = await supabase
+    .from("journal_lines")
+    .select("id, entry_id, account_id, debit::text, credit::text, accounts(code, name, type)")
+    .in("entry_id", entryIds);
+  if (linesResult.error) throw new Error(linesResult.error.message);
+
+  const entries = new Map(entriesResult.data.map((entry) => [entry.id, entry]));
+  const rows = (linesResult.data ?? [])
+    .map((line) => {
+      const entry = entries.get(line.entry_id);
+      if (!entry || !line.accounts) return null;
+      return {
+        id: line.id,
+        entry_date: entry.entry_date,
+        period: entry.period,
+        reference: entry.reference,
+        memo: entry.memo,
+        account_id: line.account_id,
+        account_code: line.accounts.code,
+        account_name: line.accounts.name,
+        account_type: line.accounts.type,
+        debit: String(line.debit ?? "0.00"),
+        credit: String(line.credit ?? "0.00"),
+        running_balance: "0.00",
+      } satisfies LedgerRow;
+    })
+    .filter((row): row is LedgerRow => row !== null)
+    .sort((a, b) => `${a.entry_date}-${a.id}`.localeCompare(`${b.entry_date}-${b.id}`));
+
+  const balances = new Map<string, string>();
+  return rows.map((row) => {
+    const balance = sumDecimalStrings([
+      balances.get(row.account_id) ?? "0.00",
+      row.debit,
+      `-${row.credit}`,
+    ]);
+    balances.set(row.account_id, balance);
+    return { ...row, running_balance: balance };
+  });
+}
+

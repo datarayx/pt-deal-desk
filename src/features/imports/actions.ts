@@ -6,7 +6,12 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/features/clients/actions";
-import { definitionFor, importDefinitions, type ImportDomain, type ImportMode } from "@/features/imports/catalog";
+import {
+  definitionFor,
+  importDefinitions,
+  type ImportDomain,
+  type ImportMode,
+} from "@/features/imports/catalog";
 import { previewRows, validateWorkbook, type ImportSheetData } from "@/features/imports/logic";
 import { saveFinancier, saveRequirement } from "@/features/financiers/actions";
 import { saveReferrer } from "@/features/referrers/actions";
@@ -63,11 +68,30 @@ async function readWorkbook(file: File, definition: ReturnType<typeof definition
     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
       const row = worksheet.getRow(rowNumber);
       const payload = Object.fromEntries(
-        headers.map((header: string, index: number) => [header, cellText(row.getCell(index + 1).value).trim()]),
+        headers.map((header: string, index: number) => [
+          header,
+          cellText(row.getCell(index + 1).value).trim(),
+        ]),
       );
       if (Object.values(payload).some(Boolean)) rows.push(payload);
     }
     sheets.push({ name: template.name, headers, rows });
+  }
+  const expected = new Set(definition.sheets.map((sheet) => sheet.name));
+  for (const worksheet of workbook.worksheets) {
+    if (expected.has(worksheet.name)) continue;
+    const headerValues = worksheet.getRow(1).values;
+    const rawHeaders = Array.isArray(headerValues) ? headerValues.slice(1) : [];
+    const headers = rawHeaders.map((value: ExcelJS.CellValue) => cellText(value).trim());
+    const rows: Record<string, string>[] = [];
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+      const row = worksheet.getRow(rowNumber);
+      const payload = Object.fromEntries(
+        headers.map((header, index) => [header, cellText(row.getCell(index + 1).value).trim()]),
+      );
+      if (Object.values(payload).some(Boolean)) rows.push(payload);
+    }
+    sheets.push({ name: worksheet.name, headers, rows });
   }
   return sheets;
 }
@@ -89,7 +113,10 @@ function booleanValue(row: Record<string, string>, key: string) {
   return ["true", "yes", "1", "y"].includes(text(row, key).toLowerCase());
 }
 
-async function readBatch(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>, id: string) {
+async function readBatch(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  id: string,
+) {
   const result = await rpcFor(supabase)("read_import_batch", { p_batch_id: id });
   if (result.error || !result.data || typeof result.data !== "object") return null;
   const value = result.data as { batch?: ImportBatchData["batch"]; rows?: ImportRow[] };
@@ -150,12 +177,22 @@ async function commitPartners(
       account_name: text(row.payload, "account_name"),
     });
     if (!result.ok || !result.data) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.ok ? "Referrer was not returned." : result.error });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: result.ok ? "Referrer was not returned." : result.error,
+      });
       continue;
     }
     refs.set(text(row.payload, "external_id"), result.data.id);
-    const refError = await saveRef(supabase, "referrer", text(row.payload, "external_id"), result.data.id);
-    if (refError) errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
+    const refError = await saveRef(
+      supabase,
+      "referrer",
+      text(row.payload, "external_id"),
+      result.data.id,
+    );
+    if (refError)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
   }
   for (const row of rows.filter((item) => item.sheet_name === "financiers")) {
     const result = await saveFinancier(null, {
@@ -166,30 +203,47 @@ async function commitPartners(
       email: text(row.payload, "email"),
       rate_min_monthly: text(row.payload, "rate_min_monthly"),
       rate_max_monthly: text(row.payload, "rate_max_monthly"),
-      facility_types: text(row.payload, "facility_types").split(";").map((value) => value.trim()).filter(Boolean),
+      facility_types: text(row.payload, "facility_types")
+        .split(";")
+        .map((value) => value.trim())
+        .filter(Boolean),
       collateral_policy: text(row.payload, "collateral_policy"),
       notes: text(row.payload, "notes"),
     });
     if (!result.ok || !result.data) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.ok ? "Financier was not returned." : result.error });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: result.ok ? "Financier was not returned." : result.error,
+      });
       continue;
     }
     const externalId = text(row.payload, "external_id");
     refs.set(externalId, result.data.id);
     const refError = await saveRef(supabase, "financier", externalId, result.data.id);
-    if (refError) errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
+    if (refError)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
   }
   for (const row of rows.filter((item) => item.sheet_name === "financier_requirements")) {
-    const financierId = refs.get(text(row.payload, "financier_external_id")) ?? (await readRefs(supabase, "financier", [text(row.payload, "financier_external_id")]))[text(row.payload, "financier_external_id")];
+    const financierId =
+      refs.get(text(row.payload, "financier_external_id")) ??
+      (await readRefs(supabase, "financier", [text(row.payload, "financier_external_id")]))[
+        text(row.payload, "financier_external_id")
+      ];
     if (!financierId) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: "The financier_external_id was not found in this or an earlier import." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "The financier_external_id was not found in this or an earlier import.",
+      });
       continue;
     }
     const result = await saveRequirement(financierId, null, {
       item: text(row.payload, "item"),
       is_required: booleanValue(row.payload, "is_required"),
     });
-    if (!result.ok) errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.error });
+    if (!result.ok)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.error });
   }
   return { errors, processed: rows.length - errors.length };
 }
@@ -207,29 +261,45 @@ async function commitAccounting(
       subtype: text(row.payload, "subtype"),
       parent_id: "",
     });
-    if (!result.ok) errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.error });
+    if (!result.ok)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.error });
   }
   const accountRows = rows.filter((item) => item.sheet_name === "accounts");
   const accountCodes = accountRows.map((row) => text(row.payload, "code"));
   const accountLookup = await supabase.from("accounts").select("id, code").in("code", accountCodes);
-  if (accountLookup.error) errors.push({ sheet: "accounts", row: 1, error: accountLookup.error.message });
+  if (accountLookup.error)
+    errors.push({ sheet: "accounts", row: 1, error: accountLookup.error.message });
   for (const row of accountRows) {
     const parentCode = text(row.payload, "parent_code");
     if (!parentCode) continue;
-    const accountId = accountLookup.data?.find((account) => account.code === text(row.payload, "code"))?.id;
+    const accountId = accountLookup.data?.find(
+      (account) => account.code === text(row.payload, "code"),
+    )?.id;
     const parentId = accountLookup.data?.find((account) => account.code === parentCode)?.id;
     if (!accountId || !parentId) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: "parent_code was not found in the imported chart." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "parent_code was not found in the imported chart.",
+      });
       continue;
     }
-    const updated = await supabase.from("accounts").update({ parent_id: parentId }).eq("id", accountId);
-    if (updated.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: updated.error.message });
+    const updated = await supabase
+      .from("accounts")
+      .update({ parent_id: parentId })
+      .eq("id", accountId);
+    if (updated.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: updated.error.message });
   }
   const headers = rows.filter((item) => item.sheet_name === "journals");
   for (const header of headers) {
     const externalId = text(header.payload, "external_id");
     const lines = rows
-      .filter((item) => item.sheet_name === "journal_lines" && text(item.payload, "journal_external_id") === externalId)
+      .filter(
+        (item) =>
+          item.sheet_name === "journal_lines" &&
+          text(item.payload, "journal_external_id") === externalId,
+      )
       .map((item) => ({
         account: text(item.payload, "account_code"),
         debit: text(item.payload, "debit"),
@@ -242,7 +312,8 @@ async function commitAccounting(
       memo: text(header.payload, "memo"),
       lines,
     });
-    if (!result.ok) errors.push({ sheet: header.sheet_name, row: header.row_number, error: result.error });
+    if (!result.ok)
+      errors.push({ sheet: header.sheet_name, row: header.row_number, error: result.error });
   }
   return { errors, processed: rows.length - errors.length };
 }
@@ -305,62 +376,85 @@ async function commitClients(
       documents: [],
       consent: booleanValue(row.payload, "consent"),
     };
-    const input = clientType === "company"
-      ? {
-          ...common,
-          client_type: "company" as const,
-          company: {
-            registered_name: text(row.payload, "registered_name"),
-            company_type: text(row.payload, "company_type"),
-            rc_number: text(row.payload, "rc_number"),
-            incorporation_date: text(row.payload, "incorporation_date"),
-            registered_address: text(row.payload, "registered_address"),
-            operating_address: text(row.payload, "operating_address"),
-            tin: text(row.payload, "tin"),
-            annual_turnover_range: text(row.payload, "annual_turnover_range"),
-            website: text(row.payload, "website"),
-            contact_person: text(row.payload, "contact_person"),
-            contact_phone: text(row.payload, "contact_phone"),
-            contact_email: text(row.payload, "contact_email"),
-          },
-          directors: (directorsByClient.get(text(row.payload, "external_id")) ?? []).map((director) => ({
-            profile: personPayload(director.payload),
-            role: text(director.payload, "role"),
-            shareholding_pct: text(director.payload, "shareholding_pct"),
-          })),
-        }
-      : {
-          ...common,
-          client_type: "individual" as const,
-          individual: personPayload(row.payload),
-        };
+    const input =
+      clientType === "company"
+        ? {
+            ...common,
+            client_type: "company" as const,
+            company: {
+              registered_name: text(row.payload, "registered_name"),
+              company_type: text(row.payload, "company_type"),
+              rc_number: text(row.payload, "rc_number"),
+              incorporation_date: text(row.payload, "incorporation_date"),
+              registered_address: text(row.payload, "registered_address"),
+              operating_address: text(row.payload, "operating_address"),
+              tin: text(row.payload, "tin"),
+              annual_turnover_range: text(row.payload, "annual_turnover_range"),
+              website: text(row.payload, "website"),
+              contact_person: text(row.payload, "contact_person"),
+              contact_phone: text(row.payload, "contact_phone"),
+              contact_email: text(row.payload, "contact_email"),
+            },
+            directors: (directorsByClient.get(text(row.payload, "external_id")) ?? []).map(
+              (director) => ({
+                profile: personPayload(director.payload),
+                role: text(director.payload, "role"),
+                shareholding_pct: text(director.payload, "shareholding_pct"),
+              }),
+            ),
+          }
+        : {
+            ...common,
+            client_type: "individual" as const,
+            individual: personPayload(row.payload),
+          };
     const result = await createClient(input);
     if (!result.ok || !result.data) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: result.ok ? "Client was not returned." : result.error });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: result.ok ? "Client was not returned." : result.error,
+      });
       continue;
     }
     const externalId = text(row.payload, "external_id");
     clientIds.set(externalId, result.data.id);
     const refError = await saveRef(supabase, "client", externalId, result.data.id);
-    if (refError) errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
+    if (refError)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
   }
 
   const knownClients = {
     ...Object.fromEntries(clientIds),
-    ...(await readRefs(supabase, "client", clientRows.map((row) => text(row.payload, "external_id")))),
+    ...(await readRefs(
+      supabase,
+      "client",
+      clientRows.map((row) => text(row.payload, "external_id")),
+    )),
   };
   const documentTypes = await supabase.from("kyc_document_types").select("id, name, client_type");
-  if (documentTypes.error) errors.push({ sheet: "documents", row: 1, error: documentTypes.error.message });
+  if (documentTypes.error)
+    errors.push({ sheet: "documents", row: 1, error: documentTypes.error.message });
   for (const row of rows.filter((item) => item.sheet_name === "documents")) {
     const clientId = knownClients[text(row.payload, "client_external_id")];
-    const type = documentTypes.data?.find((item) => item.name === text(row.payload, "document_type_name"));
+    const type = documentTypes.data?.find(
+      (item) => item.name === text(row.payload, "document_type_name"),
+    );
     if (!clientId || !type) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: !clientId ? "Client external ID was not found." : "Document type was not found." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: !clientId ? "Client external ID was not found." : "Document type was not found.",
+      });
       continue;
     }
     const path = text(row.payload, "file_path");
     if (!path.startsWith(`${clientId}/`)) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: "file_path must begin with the imported client's new ID." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "file_path must begin with the imported client's new ID.",
+      });
       continue;
     }
     const document = await supabase
@@ -371,16 +465,33 @@ async function commitClients(
       .is("individual_profile_id", null)
       .maybeSingle();
     if (document.error || !document.data) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: document.error?.message ?? "Client document checklist item was not found." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: document.error?.message ?? "Client document checklist item was not found.",
+      });
       continue;
     }
-    const update = await supabase.from("client_documents").update({ file_path: path, expiry_date: optional(row.payload, "expiry_date"), status: "received" }).eq("id", document.data.id).eq("client_id", clientId);
-    if (update.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: update.error.message });
+    const update = await supabase
+      .from("client_documents")
+      .update({
+        file_path: path,
+        expiry_date: optional(row.payload, "expiry_date"),
+        status: "received",
+      })
+      .eq("id", document.data.id)
+      .eq("client_id", clientId);
+    if (update.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: update.error.message });
   }
   for (const row of rows.filter((item) => item.sheet_name === "credit_checks")) {
     const clientId = knownClients[text(row.payload, "client_external_id")];
     if (!clientId) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: "Client external ID was not found." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "Client external ID was not found.",
+      });
       continue;
     }
     const insert = await supabase.from("credit_checks").insert({
@@ -394,12 +505,17 @@ async function commitClients(
       remarks: optional(row.payload, "remarks"),
       report_file_path: optional(row.payload, "report_file_path"),
     } as unknown as TablesInsert<"credit_checks">);
-    if (insert.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: insert.error.message });
+    if (insert.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: insert.error.message });
   }
   for (const row of rows.filter((item) => item.sheet_name === "exposures")) {
     const clientId = knownClients[text(row.payload, "client_external_id")];
     if (!clientId) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: "Client external ID was not found." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "Client external ID was not found.",
+      });
       continue;
     }
     const insert = await supabase.from("external_exposures").insert({
@@ -410,7 +526,8 @@ async function commitClients(
       outstanding: text(row.payload, "outstanding"),
       status: text(row.payload, "status"),
     } as unknown as TablesInsert<"external_exposures">);
-    if (insert.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: insert.error.message });
+    if (insert.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: insert.error.message });
   }
   return { errors, processed: rows.length - errors.length };
 }
@@ -422,19 +539,43 @@ async function commitDeals(
 ) {
   const errors: CommitError[] = [];
   const dealsRows = rows.filter((item) => item.sheet_name === "deals");
-  const clientIds = await readRefs(supabase, "client", dealsRows.map((row) => text(row.payload, "client_external_id")));
-  const financierIds = await readRefs(supabase, "financier", dealsRows.map((row) => text(row.payload, "financier_external_id")));
-  const referrerIds = await readRefs(supabase, "referrer", dealsRows.map((row) => text(row.payload, "referrer_external_id")).filter(Boolean));
+  const clientIds = await readRefs(
+    supabase,
+    "client",
+    dealsRows.map((row) => text(row.payload, "client_external_id")),
+  );
+  const financierIds = await readRefs(
+    supabase,
+    "financier",
+    dealsRows.map((row) => text(row.payload, "financier_external_id")),
+  );
+  const referrerIds = await readRefs(
+    supabase,
+    "referrer",
+    dealsRows.map((row) => text(row.payload, "referrer_external_id")).filter(Boolean),
+  );
   const facilityTypes = await supabase.from("facility_types").select("id, name");
   const stages = await supabase.from("deal_stages").select("id, name");
   const dealIds = new Map<string, string>();
   for (const row of dealsRows) {
     const payload = row.payload;
     const clientId = clientIds[text(payload, "client_external_id")];
-    const facilityTypeId = facilityTypes.data?.find((item) => item.name === text(payload, "facility_type_name"))?.id;
-    const stageId = stages.data?.find((item) => item.name === text(payload, "stage_name"))?.id ?? stages.data?.[0]?.id;
+    const facilityTypeId = facilityTypes.data?.find(
+      (item) => item.name === text(payload, "facility_type_name"),
+    )?.id;
+    const stageId =
+      stages.data?.find((item) => item.name === text(payload, "stage_name"))?.id ??
+      stages.data?.[0]?.id;
     if (!clientId || !facilityTypeId || !stageId) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: !clientId ? "Client external ID was not found." : !facilityTypeId ? "Facility type was not found." : "Deal stage was not found." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: !clientId
+          ? "Client external ID was not found."
+          : !facilityTypeId
+            ? "Facility type was not found."
+            : "Deal stage was not found.",
+      });
       continue;
     }
     const dealInsert = {
@@ -449,7 +590,9 @@ async function commitDeals(
       amount_requested: text(payload, "amount_requested"),
       amount_approved: optional(payload, "amount_approved"),
       amount_disbursed: optional(payload, "amount_disbursed"),
-      tenor_months: optional(payload, "tenor_months") ? Number(text(payload, "tenor_months")) : null,
+      tenor_months: optional(payload, "tenor_months")
+        ? Number(text(payload, "tenor_months"))
+        : null,
       interest_rate_monthly: optional(payload, "interest_rate_monthly"),
       purpose: optional(payload, "purpose"),
       collateral_type: optional(payload, "collateral_type"),
@@ -467,33 +610,80 @@ async function commitDeals(
     } as unknown as TablesInsert<"deals">;
     const inserted = await supabase.from("deals").insert(dealInsert).select("id").single();
     if (inserted.error || !inserted.data) {
-      errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error?.message ?? "Deal was not created." });
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: inserted.error?.message ?? "Deal was not created.",
+      });
       continue;
     }
     const externalId = text(payload, "external_id");
     dealIds.set(externalId, inserted.data.id);
     const refError = await saveRef(supabase, "deal", externalId, inserted.data.id);
-    if (refError) errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
+    if (refError)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: refError.message });
   }
-  const knownDeals = { ...Object.fromEntries(dealIds), ...(await readRefs(supabase, "deal", rows.filter((row) => row.sheet_name === "deals").map((row) => text(row.payload, "external_id")))) };
+  const knownDeals = {
+    ...Object.fromEntries(dealIds),
+    ...(await readRefs(
+      supabase,
+      "deal",
+      rows
+        .filter((row) => row.sheet_name === "deals")
+        .map((row) => text(row.payload, "external_id")),
+    )),
+  };
   for (const row of rows.filter((item) => item.sheet_name === "deal_requirements")) {
     const dealId = knownDeals[text(row.payload, "deal_external_id")];
-    if (!dealId) { errors.push({ sheet: row.sheet_name, row: row.row_number, error: "Deal external ID was not found." }); continue; }
+    if (!dealId) {
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "Deal external ID was not found.",
+      });
+      continue;
+    }
     const inserted = await supabase.from("deal_requirements").insert({
       deal_id: dealId,
       item: text(row.payload, "item"),
-      is_required: text(row.payload, "is_required") ? booleanValue(row.payload, "is_required") : true,
+      is_required: text(row.payload, "is_required")
+        ? booleanValue(row.payload, "is_required")
+        : true,
       status: text(row.payload, "status") || "pending",
       file_path: optional(row.payload, "file_path"),
     } as unknown as TablesInsert<"deal_requirements">);
-    if (inserted.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
+    if (inserted.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
   }
   for (const row of rows.filter((item) => item.sheet_name === "activities")) {
     const entityType = text(row.payload, "entity_type");
-    const entityId = entityType === "deal" ? knownDeals[text(row.payload, "entity_external_id")] : entityType === "client" ? (await readRefs(supabase, "client", [text(row.payload, "entity_external_id")]))[text(row.payload, "entity_external_id")] : (await readRefs(supabase, "referrer", [text(row.payload, "entity_external_id")]))[text(row.payload, "entity_external_id")];
-    if (!entityId) { errors.push({ sheet: row.sheet_name, row: row.row_number, error: "Activity entity external ID was not found." }); continue; }
-    const inserted = await supabase.from("activities").insert({ entity_type: entityType, entity_id: entityId, kind: text(row.payload, "kind"), body: text(row.payload, "body"), occurred_at: text(row.payload, "occurred_at") } as unknown as TablesInsert<"activities">);
-    if (inserted.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
+    const entityId =
+      entityType === "deal"
+        ? knownDeals[text(row.payload, "entity_external_id")]
+        : entityType === "client"
+          ? (await readRefs(supabase, "client", [text(row.payload, "entity_external_id")]))[
+              text(row.payload, "entity_external_id")
+            ]
+          : (await readRefs(supabase, "referrer", [text(row.payload, "entity_external_id")]))[
+              text(row.payload, "entity_external_id")
+            ];
+    if (!entityId) {
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "Activity entity external ID was not found.",
+      });
+      continue;
+    }
+    const inserted = await supabase.from("activities").insert({
+      entity_type: entityType,
+      entity_id: entityId,
+      kind: text(row.payload, "kind"),
+      body: text(row.payload, "body"),
+      occurred_at: text(row.payload, "occurred_at"),
+    } as unknown as TablesInsert<"activities">);
+    if (inserted.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
   }
   return { errors, processed: rows.length - errors.length };
 }
@@ -504,27 +694,61 @@ async function commitRepayments(
 ) {
   const errors: CommitError[] = [];
   const scheduleRows = rows.filter((item) => item.sheet_name === "schedules");
-  const dealIds = await readRefs(supabase, "deal", scheduleRows.map((row) => text(row.payload, "deal_external_id")));
+  const dealIds = await readRefs(
+    supabase,
+    "deal",
+    scheduleRows.map((row) => text(row.payload, "deal_external_id")),
+  );
   const schedules = new Map<string, string>();
   for (const row of scheduleRows) {
     const dealId = dealIds[text(row.payload, "deal_external_id")];
-    if (!dealId) { errors.push({ sheet: row.sheet_name, row: row.row_number, error: "Deal external ID was not found." }); continue; }
-    const inserted = await supabase.from("repayment_schedules").insert({
-      deal_id: dealId,
-      instalment_no: Number(text(row.payload, "instalment_no")),
-      due_date: text(row.payload, "due_date"),
-      principal_due: text(row.payload, "principal_due"),
-      interest_due: text(row.payload, "interest_due"),
-      total_due: text(row.payload, "total_due"),
-      status: text(row.payload, "status"),
-      days_overdue: Number(text(row.payload, "days_overdue") || "0"),
-    } as unknown as TablesInsert<"repayment_schedules">).select("id").single();
-    if (inserted.error || !inserted.data) { errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error?.message ?? "Schedule was not created." }); continue; }
-    schedules.set(`${text(row.payload, "deal_external_id")}:${text(row.payload, "instalment_no")}`, inserted.data.id);
+    if (!dealId) {
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "Deal external ID was not found.",
+      });
+      continue;
+    }
+    const inserted = await supabase
+      .from("repayment_schedules")
+      .insert({
+        deal_id: dealId,
+        instalment_no: Number(text(row.payload, "instalment_no")),
+        due_date: text(row.payload, "due_date"),
+        principal_due: text(row.payload, "principal_due"),
+        interest_due: text(row.payload, "interest_due"),
+        total_due: text(row.payload, "total_due"),
+        status: text(row.payload, "status"),
+        days_overdue: Number(text(row.payload, "days_overdue") || "0"),
+      } as unknown as TablesInsert<"repayment_schedules">)
+      .select("id")
+      .single();
+    if (inserted.error || !inserted.data) {
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: inserted.error?.message ?? "Schedule was not created.",
+      });
+      continue;
+    }
+    schedules.set(
+      `${text(row.payload, "deal_external_id")}:${text(row.payload, "instalment_no")}`,
+      inserted.data.id,
+    );
   }
   for (const row of rows.filter((item) => item.sheet_name === "payments")) {
-    const scheduleId = schedules.get(`${text(row.payload, "deal_external_id")}:${text(row.payload, "instalment_no")}`);
-    if (!scheduleId) { errors.push({ sheet: row.sheet_name, row: row.row_number, error: "The payment's schedule was not found in this batch." }); continue; }
+    const scheduleId = schedules.get(
+      `${text(row.payload, "deal_external_id")}:${text(row.payload, "instalment_no")}`,
+    );
+    if (!scheduleId) {
+      errors.push({
+        sheet: row.sheet_name,
+        row: row.row_number,
+        error: "The payment's schedule was not found in this batch.",
+      });
+      continue;
+    }
     const confirmed = text(row.payload, "status") === "confirmed";
     const inserted = await supabase.from("repayment_reports").insert({
       schedule_id: scheduleId,
@@ -533,10 +757,13 @@ async function commitRepayments(
       channel: text(row.payload, "channel"),
       proof_file_path: optional(row.payload, "proof_file_path"),
       confirmed_by_financier: confirmed,
-      confirmed_at: confirmed ? optional(row.payload, "confirmed_at") ?? new Date().toISOString() : null,
+      confirmed_at: confirmed
+        ? (optional(row.payload, "confirmed_at") ?? new Date().toISOString())
+        : null,
       confirmation_note: optional(row.payload, "confirmation_note"),
     } as unknown as TablesInsert<"repayment_reports">);
-    if (inserted.error) errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
+    if (inserted.error)
+      errors.push({ sheet: row.sheet_name, row: row.row_number, error: inserted.error.message });
   }
   return { errors, processed: rows.length - errors.length };
 }
@@ -562,7 +789,10 @@ export async function stageImport(formData: FormData): Promise<ActionResult<Stag
     return { ok: false, error: "Your role cannot import this type of data." };
   }
   if (file.size > 20 * 1024 * 1024) {
-    return { ok: false, error: "Workbooks must be 20 MB or smaller. Split the import into batches." };
+    return {
+      ok: false,
+      error: "Workbooks must be 20 MB or smaller. Split the import into batches.",
+    };
   }
 
   const definition = definitionFor(domain.data);
@@ -570,7 +800,10 @@ export async function stageImport(formData: FormData): Promise<ActionResult<Stag
   try {
     sheets = await readWorkbook(file, definition);
   } catch {
-    return { ok: false, error: "The workbook could not be read. Download a fresh template and try again." };
+    return {
+      ok: false,
+      error: "The workbook could not be read. Download a fresh template and try again.",
+    };
   }
   const errors = validateWorkbook(definition, sheets);
   const rows = previewRows(sheets, Number.MAX_SAFE_INTEGER);
@@ -621,10 +854,13 @@ export async function commitImport(batchId: unknown): Promise<ActionResult<Impor
   const supabase = await createSupabaseServerClient();
   const batch = await readBatch(supabase, parsed.data);
   if (!batch) return { ok: false, error: "This import batch no longer exists." };
-  if (!canImport(user, batch.batch.domain)) return { ok: false, error: "Your role cannot commit this import." };
-  if (batch.batch.status !== "staged") return { ok: false, error: "This batch has already been processed." };
+  if (!canImport(user, batch.batch.domain))
+    return { ok: false, error: "Your role cannot commit this import." };
+  if (batch.batch.status !== "staged")
+    return { ok: false, error: "This batch has already been processed." };
   const invalidRows = batch.rows.filter((row) => row.status === "invalid");
-  if (invalidRows.length > 0) return { ok: false, error: "Fix all validation errors before committing this batch." };
+  if (invalidRows.length > 0)
+    return { ok: false, error: "Fix all validation errors before committing this batch." };
 
   const starting = await rpcFor(supabase)("finish_import_batch", {
     p_batch_id: parsed.data,
@@ -633,22 +869,30 @@ export async function commitImport(batchId: unknown): Promise<ActionResult<Impor
   if (starting.error) return { ok: false, error: friendlyDbError(starting.error, "this import") };
 
   let result: { errors: CommitError[]; processed: number };
-  switch (batch.batch.domain) {
-    case "partners":
-      result = await commitPartners(supabase, batch.rows);
-      break;
-    case "clients":
-      result = await commitClients(supabase, batch.rows);
-      break;
-    case "deals":
-      result = await commitDeals(supabase, user, batch.rows);
-      break;
-    case "repayments":
-      result = await commitRepayments(supabase, batch.rows);
-      break;
-    case "accounting":
-      result = await commitAccounting(supabase, batch.rows);
-      break;
+  try {
+    switch (batch.batch.domain) {
+      case "partners":
+        result = await commitPartners(supabase, batch.rows);
+        break;
+      case "clients":
+        result = await commitClients(supabase, batch.rows);
+        break;
+      case "deals":
+        result = await commitDeals(supabase, user, batch.rows);
+        break;
+      case "repayments":
+        result = await commitRepayments(supabase, batch.rows);
+        break;
+      case "accounting":
+        result = await commitAccounting(supabase, batch.rows);
+        break;
+    }
+  } catch (error) {
+    await rpcFor(supabase)("finish_import_batch", { p_batch_id: parsed.data, p_status: "failed" });
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "The import failed before it completed.",
+    };
   }
 
   const finalStatus = result.errors.length > 0 ? "failed" : "committed";
@@ -658,7 +902,10 @@ export async function commitImport(batchId: unknown): Promise<ActionResult<Impor
   });
   if (finished.error) return { ok: false, error: friendlyDbError(finished.error, "this import") };
   refresh();
-  return { ok: true, data: { batchId: parsed.data, processed: result.processed, errors: result.errors } };
+  return {
+    ok: true,
+    data: { batchId: parsed.data, processed: result.processed, errors: result.errors },
+  };
 }
 
 export async function cancelImport(batchId: unknown): Promise<ActionResult> {

@@ -12,6 +12,52 @@ import type { Database } from "@/types/database";
 const idSchema = z.uuid();
 const PROOF_PATH = /^[A-Za-z0-9-]{36}\/[A-Za-z0-9-]{36}\.(pdf|jpg|png|webp)$/;
 
+export async function getRepaymentProofSignedFileUrl(
+  reportId: unknown,
+): Promise<ActionResult<{ url: string }>> {
+  const user = await requireRole("ceo");
+  const parsed = idSchema.safeParse(reportId);
+  if (!parsed.success) return { ok: false, error: "That proof file is not valid." };
+  const supabase = await createSupabaseServerClient();
+  const { data: report, error } = await supabase
+    .from("repayment_reports")
+    .select("id, schedule_id, proof_file_path")
+    .eq("id", parsed.data)
+    .maybeSingle();
+  if (error) return { ok: false, error: friendlyDbError(error, "this proof file") };
+  if (!report?.proof_file_path)
+    return { ok: false, error: "No proof file is attached to this payment." };
+  const { data: schedule, error: scheduleError } = await supabase
+    .from("repayment_schedules")
+    .select("deal_id")
+    .eq("id", report.schedule_id)
+    .maybeSingle();
+  if (scheduleError || !schedule)
+    return { ok: false, error: "That payment is no longer attached to a deal." };
+  if (
+    !PROOF_PATH.test(report.proof_file_path) ||
+    !report.proof_file_path.startsWith(`${schedule.deal_id}/`)
+  )
+    return { ok: false, error: "That proof file is not valid for this deal." };
+  const signed = await supabase.storage
+    .from("repayment-proofs")
+    .createSignedUrl(report.proof_file_path, 300);
+  if (signed.error || !signed.data?.signedUrl)
+    return { ok: false, error: "The proof file could not be opened." };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "signed_url",
+    entity_type: "repayment_report",
+    entity_id: report.id,
+    after: {
+      bucket: "repayment-proofs",
+      path: report.proof_file_path,
+      deal_id: schedule.deal_id,
+    },
+  });
+  return { ok: true, data: { url: signed.data.signedUrl } };
+}
+
 export async function reportRepayment(
   input: unknown,
 ): Promise<ActionResult<{ reportIds: string[] }>> {
@@ -66,3 +112,4 @@ export async function confirmRepayment(reportId: unknown, input: unknown): Promi
   refresh();
   return { ok: true };
 }
+

@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -11,10 +11,33 @@ import {
   updatePasswordSchema,
 } from "@/features/auth/schemas";
 import { homeFor, isRole, safeNextPath } from "@/lib/auth/access";
+import { AUTH_PERSISTENCE_COOKIE, AUTH_PERSISTENCE_MAX_AGE } from "@/lib/auth/persistence";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const GENERIC_SIGN_IN_ERROR = "That email and password don't match an account.";
+
+async function setRememberMeCookie(rememberMe: boolean) {
+  const cookieStore = await cookies();
+  cookieStore.set(AUTH_PERSISTENCE_COOKIE, rememberMe ? "1" : "", {
+    path: "/",
+    maxAge: rememberMe ? AUTH_PERSISTENCE_MAX_AGE : 0,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
+async function clearRememberMeCookie() {
+  await setRememberMeCookie(false);
+}
+
+async function signOutAndRedirect(destination: string) {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  await clearRememberMeCookie();
+  redirect(destination);
+}
 
 export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const parsed = signInSchema.safeParse({
@@ -27,7 +50,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
     return { status: "error", fieldErrors: firstFieldErrors(parsed.error), email: echoedEmail };
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient({ persistSession: parsed.data.rememberMe });
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -49,6 +72,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
 
   if (!profile?.is_active || !isRole(profile.role)) {
     await supabase.auth.signOut();
+    await clearRememberMeCookie();
     return {
       status: "error",
       message: "Your account doesn't have access yet. Ask the CEO to activate it.",
@@ -137,7 +161,10 @@ export async function updatePassword(
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
-  redirect("/login");
+  await signOutAndRedirect("/login");
 }
+
+export async function signOutForInactivity(): Promise<void> {
+  await signOutAndRedirect("/login?error=session-timeout");
+}
+

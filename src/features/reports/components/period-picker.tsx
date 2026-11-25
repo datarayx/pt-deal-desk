@@ -37,6 +37,8 @@ export function PeriodPicker({ onChange }: { onChange: (range: PeriodRange) => v
       ),
     [customFrom, customTo, month, preset, quarter, year],
   );
+  const customRangeValid =
+    preset !== "custom" || (Boolean(customFrom) && Boolean(customTo) && customFrom <= customTo);
   function change(nextPreset: PeriodPreset) {
     setPreset(nextPreset);
     const nextRange = rangeFromPreset(
@@ -45,11 +47,11 @@ export function PeriodPicker({ onChange }: { onChange: (range: PeriodRange) => v
       customFrom,
       customTo,
     );
-    onChange(nextRange);
+    if (nextRange.from <= nextRange.to) onChange(nextRange);
   }
   function update(callback: () => void, next: PeriodRange) {
     callback();
-    onChange(next);
+    if (preset !== "custom" || next.from <= next.to) onChange(next);
   }
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
@@ -116,7 +118,11 @@ export function PeriodPicker({ onChange }: { onChange: (range: PeriodRange) => v
       )}
       {preset === "custom" && (
         <>
-          <Field label="From" htmlFor="report-from">
+          <Field
+            label="From"
+            htmlFor="report-from"
+            error={!customRangeValid ? "From must be on or before To." : undefined}
+          >
             <Input
               id="report-from"
               type="date"
@@ -129,7 +135,11 @@ export function PeriodPicker({ onChange }: { onChange: (range: PeriodRange) => v
               }
             />
           </Field>
-          <Field label="To" htmlFor="report-to">
+          <Field
+            label="To"
+            htmlFor="report-to"
+            error={!customRangeValid ? "Choose a valid date range." : undefined}
+          >
             <Input
               id="report-to"
               type="date"
@@ -144,9 +154,12 @@ export function PeriodPicker({ onChange }: { onChange: (range: PeriodRange) => v
           </Field>
         </>
       )}
-      <p className="pb-2 text-small text-muted-foreground">
+      <p
+        className={`pb-2 text-small ${customRangeValid ? "text-muted-foreground" : "text-danger"}`}
+      >
         Current: <span className="num">{range.from}</span> → <span className="num">{range.to}</span>
       </p>
     </div>
   );
 }
+

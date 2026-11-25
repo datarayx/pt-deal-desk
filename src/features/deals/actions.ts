@@ -11,6 +11,33 @@ import type { Database, TablesInsert } from "@/types/database";
 
 const idSchema = z.uuid();
 
+export async function getDealSignedFileUrl(
+  documentId: unknown,
+): Promise<ActionResult<{ url: string }>> {
+  const user = await requireRole("ceo");
+  const parsed = idSchema.safeParse(documentId);
+  if (!parsed.success) return { ok: false, error: "That file is not valid." };
+  const supabase = await createSupabaseServerClient();
+  const { data: document, error } = await supabase
+    .from("deal_documents")
+    .select("id, deal_id, file_path")
+    .eq("id", parsed.data)
+    .maybeSingle();
+  if (error) return { ok: false, error: friendlyDbError(error, "this file") };
+  if (!document) return { ok: false, error: "That file is no longer attached to this deal." };
+  const signed = await supabase.storage.from("deal-docs").createSignedUrl(document.file_path, 300);
+  if (signed.error || !signed.data?.signedUrl)
+    return { ok: false, error: "The file could not be opened." };
+  await supabase.from("audit_log").insert({
+    actor_id: user.id,
+    action: "signed_url",
+    entity_type: "deal_document",
+    entity_id: document.id,
+    after: { bucket: "deal-docs", path: document.file_path, deal_id: document.deal_id },
+  });
+  return { ok: true, data: { url: signed.data.signedUrl } };
+}
+
 export async function createDeal(
   input: unknown,
 ): Promise<ActionResult<{ id: string; reference: string }>> {
@@ -228,3 +255,4 @@ export async function disburseDeal(
   refresh();
   return { ok: true, data: { instalments: data ?? 0 } };
 }
+

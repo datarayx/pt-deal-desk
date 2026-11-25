@@ -10,6 +10,7 @@ import Link from "next/link";
 import type * as React from "react";
 
 import { DateText } from "@/components/common/date-text";
+import { OpenPrivateFileButton } from "@/components/common/open-private-file-button";
 import { DetailList } from "@/components/common/detail-list";
 import { EmptyState } from "@/components/common/empty-state";
 import { MoneyText } from "@/components/common/money-text";
@@ -17,6 +18,7 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DealDetail } from "@/features/deals/detail-queries";
+import { getDealSignedFileUrl } from "@/features/deals/actions";
 import { sumDecimalStrings } from "@/lib/money/decimal";
 import { dealOutcome, repaymentStatus } from "@/lib/status";
 
@@ -467,6 +469,7 @@ export function DealDocuments({ documents }: { documents: DealDetail["documents"
               <p className="truncate text-small font-medium">{document.title}</p>
               <p className="truncate text-caption text-muted-foreground">{document.file_path}</p>
             </div>
+            <OpenPrivateFileButton action={getDealSignedFileUrl} input={document.id} />
             <Badge variant="outline">
               <DateText value={document.created_at} />
             </Badge>
@@ -526,3 +529,4 @@ export function DealActivity({ activities }: { activities: DealDetail["activitie
     </Card>
   );
 }
+

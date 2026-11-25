@@ -34,19 +34,42 @@ const styles = StyleSheet.create({
   label: { fontSize: 8, color: "#56697F", marginBottom: 3 },
   value: { fontSize: 10, marginBottom: 5 },
   table: { borderStyle: "solid", borderWidth: 0.5, borderColor: "#C9D2DC" },
-  row: { flexDirection: "row", minHeight: 24, alignItems: "center", borderBottomWidth: 0.5, borderBottomColor: "#E5EAF0" },
+  row: {
+    flexDirection: "row",
+    minHeight: 24,
+    alignItems: "center",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#E5EAF0",
+  },
   header: { backgroundColor: "#011A32", color: "#FFFFFF", fontFamily: "Helvetica-Bold" },
   description: { flex: 1, padding: 6 },
   quantity: { width: 60, padding: 6, textAlign: "right" },
   amount: { width: 100, padding: 6, textAlign: "right" },
   totals: { alignItems: "flex-end", marginTop: 14 },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", width: 210, paddingVertical: 3 },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 210,
+    paddingVertical: 3,
+  },
   totalLabel: { color: "#56697F" },
-  grandTotal: { fontFamily: "Helvetica-Bold", fontSize: 12, borderTopWidth: 1, borderTopColor: "#011A32", paddingTop: 6 },
+  grandTotal: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#011A32",
+    paddingTop: 6,
+  },
   notes: { marginTop: 18, color: "#56697F", lineHeight: 1.35 },
 });
 
-function InvoicePdfDocument({ invoice, company }: { invoice: InvoiceData; company: ExportCompany }) {
+function InvoicePdfDocument({
+  invoice,
+  company,
+}: {
+  invoice: InvoiceData;
+  company: ExportCompany;
+}) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -101,7 +124,12 @@ function InvoicePdfDocument({ invoice, company }: { invoice: InvoiceData; compan
 }
 
 function safeFileName(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "invoice";
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "invoice"
+  );
 }
 
 export async function downloadInvoicePdf(invoice: InvoiceData) {

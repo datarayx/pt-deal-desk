@@ -280,9 +280,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       ),
   );
   const portfolioAtRisk =
-    Number(outstandingBalance) > 0
-      ? (Number(overdueAmount) / Number(outstandingBalance)) * 100
-      : 0;
+    Number(outstandingBalance) > 0 ? (Number(overdueAmount) / Number(outstandingBalance)) * 100 : 0;
   const portfolioAtRiskPrior =
     Number(outstandingBalancePrior) > 0
       ? (Number(overdueAmountPrior) / Number(outstandingBalancePrior)) * 100

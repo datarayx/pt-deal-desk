@@ -93,10 +93,10 @@ export function LogoUploader({
           )}
         </div>
         <p className="text-small text-muted-foreground">
-          PNG, JPEG or WebP, up to 1 MB. A square or wide logo on a transparent background works
-          best.
+          PNG or JPEG, up to 1 MB. A square or wide logo on a transparent background works best.
         </p>
       </div>
     </div>
   );
 }
+

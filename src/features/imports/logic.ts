@@ -18,18 +18,33 @@ export function validateWorkbook(definition: ImportDefinition, sheets: ImportShe
   for (const sheet of sheets) {
     const template = definition.sheets.find((candidate) => candidate.name === sheet.name);
     if (!template) {
-      errors.push({ sheet: sheet.name, row: 1, errors: [`Unexpected sheet. Use one of: ${[...knownSheets].join(", ")}.`] });
+      errors.push({
+        sheet: sheet.name,
+        row: 1,
+        errors: [`Unexpected sheet. Use one of: ${[...knownSheets].join(", ")}.`],
+      });
       continue;
     }
     for (const required of template.required) {
       if (!sheet.headers.includes(required)) {
-        errors.push({ sheet: sheet.name, row: 1, errors: [`Missing required column: ${required}.`] });
+        errors.push({
+          sheet: sheet.name,
+          row: 1,
+          errors: [`Missing required column: ${required}.`],
+        });
       }
     }
+    const seenExternalIds = new Set<string>();
     sheet.rows.forEach((row, index) => {
       const rowErrors = template.required
         .filter((required) => !String(row[required] ?? "").trim())
         .map((required) => `${required} is required.`);
+      const externalId = String(row.external_id ?? "").trim();
+      if (externalId) {
+        if (seenExternalIds.has(externalId))
+          rowErrors.push(`external_id must be unique in this sheet: ${externalId}.`);
+        seenExternalIds.add(externalId);
+      }
       if (rowErrors.length) errors.push({ sheet: sheet.name, row: index + 2, errors: rowErrors });
     });
   }

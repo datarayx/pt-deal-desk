@@ -8,8 +8,14 @@ describe("bulk import validation", () => {
     const definition = definitionFor("accounting");
     const sheets: ImportSheetData[] = [{ name: "journals", headers: ["external_id"], rows: [{}] }];
     const errors = validateWorkbook(definition, sheets);
-    expect(errors.some((error) => error.errors.includes("Missing required column: entry_date."))).toBe(true);
-    expect(errors.some((error) => error.sheet === "accounts" && error.errors.includes("This sheet is required."))).toBe(true);
+    expect(
+      errors.some((error) => error.errors.includes("Missing required column: entry_date.")),
+    ).toBe(true);
+    expect(
+      errors.some(
+        (error) => error.sheet === "accounts" && error.errors.includes("This sheet is required."),
+      ),
+    ).toBe(true);
   });
 
   it("reports missing required cells and keeps a bounded preview", () => {
@@ -17,11 +23,35 @@ describe("bulk import validation", () => {
     const sheets: ImportSheetData[] = definition.sheets.map((sheet) => ({
       name: sheet.name,
       headers: sheet.columns,
-      rows: sheet.name === "referrers" ? [{ external_id: "R-1", name: "", referrer_type: "consultant" }] : [],
+      rows:
+        sheet.name === "referrers"
+          ? [{ external_id: "R-1", name: "", referrer_type: "consultant" }]
+          : [],
     }));
     const errors = validateWorkbook(definition, sheets);
     expect(errors.some((error) => error.sheet === "referrers" && error.row === 2)).toBe(true);
     expect(previewRows(sheets, 1)).toHaveLength(1);
+  });
+
+  it("rejects duplicate source IDs before any records can be committed", () => {
+    const definition = definitionFor("partners");
+    const sheets: ImportSheetData[] = definition.sheets.map((sheet) => ({
+      name: sheet.name,
+      headers: sheet.columns,
+      rows:
+        sheet.name === "referrers"
+          ? [
+              { external_id: "R-1", name: "One", referrer_type: "consultant" },
+              { external_id: "R-1", name: "Two", referrer_type: "consultant" },
+            ]
+          : [],
+    }));
+    const errors = validateWorkbook(definition, sheets);
+    expect(
+      errors.some((error) =>
+        error.errors.some((message) => message.includes("external_id must be unique")),
+      ),
+    ).toBe(true);
   });
 });
 

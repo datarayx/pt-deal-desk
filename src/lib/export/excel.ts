@@ -61,7 +61,8 @@ export async function downloadExcel(table: ExportTable) {
   }
   sheet.views = [{ state: "frozen", ySplit: 5 }];
   sheet.getColumn(1).width = Math.max(14, Math.min(42, brandedTable.columns[0]?.length ?? 14));
-  for (let index = 2; index <= brandedTable.columns.length; index += 1) sheet.getColumn(index).width = 18;
+  for (let index = 2; index <= brandedTable.columns.length; index += 1)
+    sheet.getColumn(index).width = 18;
   sheet.autoFilter = {
     from: { row: 5, column: 1 },
     to: { row: Math.max(5, brandedTable.rows.length + 5), column: brandedTable.columns.length },

@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { DateText } from "@/components/common/date-text";
 import { EmptyState } from "@/components/common/empty-state";
+import { OpenPrivateFileButton } from "@/components/common/open-private-file-button";
 import { Field } from "@/components/common/field";
 import { FormSheet } from "@/components/common/form-sheet";
 import { MoneyText } from "@/components/common/money-text";
@@ -27,7 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { confirmRepayment, reportRepayment } from "@/features/repayments/actions";
+import {
+  confirmRepayment,
+  getRepaymentProofSignedFileUrl,
+  reportRepayment,
+} from "@/features/repayments/actions";
 import {
   REPAYMENT_PROOF_ACCEPT,
   removeRepaymentProof,
@@ -271,9 +276,15 @@ function ReportedTable({
       header: "Proof",
       cell: ({ row }) =>
         row.original.proof_file_path ? (
-          <Badge variant="success">
-            <FileCheck2Icon /> Attached
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="success">
+              <FileCheck2Icon /> Attached
+            </Badge>
+            <OpenPrivateFileButton
+              action={getRepaymentProofSignedFileUrl}
+              input={row.original.id}
+            />
+          </div>
         ) : (
           <Badge variant="warning">Missing</Badge>
         ),
@@ -544,3 +555,4 @@ function repaymentStatus(status: RepaymentScheduleRow["status"]) {
   if (status === "due") return { label: "Due soon", tone: "warning" as const };
   return { label: "Scheduled", tone: "neutral" as const };
 }
+
