@@ -56,6 +56,7 @@ export type DashboardData = {
     pipelineValue: DashboardKpi;
     outstandingBalance: DashboardKpi;
     overdueAmount: DashboardKpi;
+    portfolioAtRisk: DashboardKpi;
     feesEarnedMtd: DashboardKpi;
     feesEarnedYtd: DashboardKpi;
     feesReceivable: DashboardKpi;
@@ -278,6 +279,14 @@ export async function getDashboardData(): Promise<DashboardData> {
         ),
       ),
   );
+  const portfolioAtRisk =
+    Number(outstandingBalance) > 0
+      ? (Number(overdueAmount) / Number(outstandingBalance)) * 100
+      : 0;
+  const portfolioAtRiskPrior =
+    Number(outstandingBalancePrior) > 0
+      ? (Number(overdueAmountPrior) / Number(outstandingBalancePrior)) * 100
+      : 0;
   const earnedAmount = (fee: DashboardFee) => fee.computed_amount ?? "0.00";
   const earnedMtd = sumDecimalStrings(
     fees
@@ -432,6 +441,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       pipelineValue: { current: pipelineValue, previous: pipelineValuePrior },
       outstandingBalance: { current: outstandingBalance, previous: outstandingBalancePrior },
       overdueAmount: { current: overdueAmount, previous: overdueAmountPrior },
+      portfolioAtRisk: { current: portfolioAtRisk, previous: portfolioAtRiskPrior },
       feesEarnedMtd: { current: earnedMtd, previous: earnedMtdPrior },
       feesEarnedYtd: { current: earnedYtd, previous: earnedYtdPrior },
       feesReceivable: { current: receivable, previous: receivablePrior },
@@ -448,3 +458,4 @@ export async function getDashboardData(): Promise<DashboardData> {
 }
 
 export { percentageDelta };
+
