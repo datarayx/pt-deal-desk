@@ -34,6 +34,12 @@ describe("toCsv", () => {
       ),
     ).toBe('Name,Amount\r\nA,10.00\r\n"B, Ltd",');
   });
+
+  it("can include company text before the data header", () => {
+    expect(toCsv(["Name"], [["A"]], [["P&T Finance Consult Limited"], ["Lagos"]])).toBe(
+      "P&T Finance Consult Limited\r\nLagos\r\nName\r\nA",
+    );
+  });
 });
 
 describe("csvFileName", () => {
@@ -44,3 +50,4 @@ describe("csvFileName", () => {
     );
   });
 });
+
