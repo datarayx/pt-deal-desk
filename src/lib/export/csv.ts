@@ -18,8 +18,9 @@ export function csvCell(value: string | number | null | undefined): string {
 export function toCsv(
   header: readonly string[],
   rows: readonly (readonly (string | number | null | undefined)[])[],
+  preamble: readonly (readonly (string | number | null | undefined)[])[] = [],
 ): string {
-  return [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  return [...preamble, header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
 }
 
 /** "financiers-2026-11-24.csv" — date in Lagos time. */
@@ -27,3 +28,4 @@ export function csvFileName(base: string, now: Date = new Date()): string {
   const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(now);
   return `${base}-${day}.csv`;
 }
+
