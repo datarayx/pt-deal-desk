@@ -29,7 +29,6 @@ import {
   FeesChart,
   OverdueAgeingChart,
   PipelineChart,
-  PipelineConversionChart,
   RepaymentsDueChart,
 } from "@/features/dashboard/components/dashboard-charts";
 import type { DashboardData } from "@/features/dashboard/queries";
@@ -322,25 +321,6 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
             />
           ) : (
             <PipelineChart data={data.pipeline} />
-          )}
-        </Widget>
-        <Widget
-          title="Pipeline conversion"
-          description="Deal volume across each stage of the funnel."
-          action={
-            <span className="text-caption text-muted-foreground">
-              {data.pipeline.reduce((total, row) => total + row.count, 0)} active deals
-            </span>
-          }
-        >
-          {data.pipeline.length === 0 || data.pipeline.every((row) => row.count === 0) ? (
-            <EmptyWidget
-              icon={<BarChart3Icon />}
-              title="No deal volume yet"
-              description="Deal counts will appear here as the pipeline fills."
-            />
-          ) : (
-            <PipelineConversionChart data={data.pipeline} />
           )}
         </Widget>
         <Widget title="Fees earned vs received" description="Last six months, in ₦.">
