@@ -11,7 +11,7 @@ Legend: **C** = CEO, **A** = Accountant.
 ## CEO area
 | Screen | Route | Contents |
 |---|---|---|
-| Dashboard | `/dashboard` | KPIs (active deals, pipeline value, outstanding balance, overdue amount, fees earned MTD/YTD, fees receivable); Ongoing transactions table (client, financier, amount, stage, deficiency, days in stage); Repayments due next 14 days; Overdue list with "Log call" action; Pipeline by stage chart; Fees earned vs received chart; Top referrers |
+| Dashboard | `/dashboard` | KPIs (active deals, pipeline value, outstanding balance, overdue amount, portfolio at risk, fees earned MTD/YTD, fees receivable); Ongoing transactions table (client, financier, amount, stage, deficiency, days in stage); Repayments due next 14 days; Overdue list with "Log call" action; Pipeline by stage chart; Pipeline conversion chart; Fees earned vs received chart; Top referrers |
 | Clients | `/clients` | Table: name, type, sector, KYC status, latest credit rating, active deals, outstanding, referrer. Filters: type, sector, KYC status |
 | New client | `/clients/new` | Step 1 type → Step 2 details → Step 3 directors (company) → Step 4 documents → Step 5 review |
 | Client 360 | `/clients/[id]` | Header (name, type, KYC badge, reliability badge); tabs: Overview · KYC & Documents · Directors · Credit checks · Deals · Repayments · Activity |
@@ -40,3 +40,4 @@ Legend: **C** = CEO, **A** = Accountant.
 
 ## Global
 Sidebar, top bar with ⌘K search and notification bell (dropdown of alerts, "mark all read"), user menu (profile, theme toggle, sign out).
+
