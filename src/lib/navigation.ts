@@ -25,6 +25,7 @@ import {
   WorkflowIcon,
   ListChecksIcon,
   ScrollTextIcon,
+  UploadCloudIcon,
 } from "lucide-react";
 
 // Single source of truth for the app's navigation (SCREENS.md). Drives the sidebar, the mobile
@@ -93,6 +94,13 @@ export const navSections: readonly NavSection[] = [
         icon: PhoneCallIcon,
         roles: CEO,
         keywords: ["calls", "tasks", "promise to pay"],
+      },
+      {
+        title: "Data import",
+        href: "/imports",
+        icon: UploadCloudIcon,
+        roles: BOTH,
+        keywords: ["bulk", "migration", "excel", "workbook", "upload"],
       },
     ],
   },
@@ -285,6 +293,7 @@ const extraTitles: readonly { pattern: RegExp; title: string; parent: string }[]
   { pattern: /^\/deals\/[^/]+$/, title: "Deal", parent: "/deals" },
   { pattern: /^\/referrers\/[^/]+$/, title: "Referrer", parent: "/referrers" },
   { pattern: /^\/financiers\/[^/]+$/, title: "Financier", parent: "/financiers" },
+  { pattern: /^\/imports$/, title: "Data import", parent: "/imports" },
 ];
 
 export type Crumb = { title: string; href?: string };
@@ -326,3 +335,4 @@ export function sectionsForRole(role: Role): NavSection[] {
 export function footerNavForRole(role: Role): NavItem[] {
   return footerNav.filter((item) => item.roles.includes(role));
 }
+
