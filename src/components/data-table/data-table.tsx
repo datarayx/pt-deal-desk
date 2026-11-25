@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/table";
 import type { SavedView, ViewState } from "@/features/saved-views/schemas";
 import { csvFileName, toCsv } from "@/lib/export/csv";
+import { getClientExportCompany } from "@/lib/export/client-company";
 import { downloadExcel } from "@/lib/export/excel";
 import { downloadPdf } from "@/lib/export/pdf";
 import type { ExportTable } from "@/lib/export/types";
@@ -113,7 +114,7 @@ export function DataTable<TData>({
   );
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [activeViewId, setActiveViewId] = useState<string | null>(null);
-  const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
+  const [exporting, setExporting] = useState<"csv" | "excel" | "pdf" | null>(null);
 
   const searched = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
@@ -221,17 +222,40 @@ export function DataTable<TData>({
     };
   }
 
-  function exportCsv(selectedOnly = false) {
-    const tableData = getExportTable(selectedOnly);
-    const csv = toCsv(tableData.columns, tableData.rows);
-    // BOM so Excel reads ₦ and accented names as UTF-8.
-    const blob = new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = csvFileName(exportName);
-    link.click();
-    URL.revokeObjectURL(url);
+  async function exportCsv(selectedOnly = false) {
+    setExporting("csv");
+    try {
+      const [tableData, company] = await Promise.all([
+        Promise.resolve(getExportTable(selectedOnly)),
+        getClientExportCompany(),
+      ]);
+      const contact = [
+        company.companyAddress,
+        company.companyPhone,
+        company.companyEmail,
+        company.companyWebsite,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const preamble = [
+        [company.companyName],
+        ...(contact ? [[contact]] : []),
+        [],
+      ];
+      const csv = toCsv(tableData.columns, tableData.rows, preamble);
+      // BOM so Excel reads ₦ and accented names as UTF-8.
+      const blob = new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = csvFileName(exportName);
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Company profile could not be loaded for this export.");
+    } finally {
+      setExporting(null);
+    }
   }
 
   async function exportExcelFile(selectedOnly = false) {
@@ -259,7 +283,13 @@ export function DataTable<TData>({
   function exportButtons(selectedOnly = false) {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => exportCsv(selectedOnly)}>
+        <Button
+          variant="outline"
+          size="sm"
+          pending={exporting === "csv"}
+          disabled={exporting !== null}
+          onClick={() => void exportCsv(selectedOnly)}
+        >
           <DownloadIcon /> CSV
         </Button>
         <Button
@@ -296,7 +326,6 @@ export function DataTable<TData>({
   if (data.length === 0) return <>{emptyState}</>;
 
   const pageRows = table.getRowModel().rows;
-  const visibleColumns = table.getVisibleLeafColumns().length;
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
@@ -491,3 +520,4 @@ export function DataTable<TData>({
     </div>
   );
 }
+
