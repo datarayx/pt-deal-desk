@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   },
   description: "Clients, deals, repayments and books for P&T Finance Consult Limited.",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
 };
 
