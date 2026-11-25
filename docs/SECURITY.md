@@ -4,6 +4,7 @@
 - Helper: `auth_role()` returns the caller's role from `profiles`.
 - **ceo**: full read/write on all tables.
 - **accountant**: read/write `accounts`, `journal_entries`, `journal_lines`, `periods`; read `deal_fees` and update fee status only through the receipt/payment functions; read referrer name, bank_name, account_name and the safe views (`v_fee_lines_finance`: deal reference, client display name, financier name). Safe views use `security_invoker` or narrow security-definer functions; **no access** to `clients` details, `individual_profiles`, `company_profiles`, `company_directors`, `client_documents`, `credit_checks`, `external_exposures`, `repayment_*`, `follow_up_tasks`, `financiers` contact details.
+- Accountants may receive **sanitized reminder summaries** in the notification bell. These contain only the reminder category and a link to `/finance`; the client, deal, repayment, and proof details remain CEO-only.
 - Unauthenticated: nothing.
 - Every new table ships with RLS enabled and explicit policies in the same migration.
 
@@ -21,3 +22,4 @@
 - Server Actions validate input with zod and re-check role server-side.
 - Session idle timeout 60 min, absolute 12 h; CEO can "sign out everywhere" for any user, including themself.
 - Demo credentials appear on the login page only when `NEXT_PUBLIC_DEMO_MODE=true`. Demo users are created by the seed via the admin API (no invite emails).
+

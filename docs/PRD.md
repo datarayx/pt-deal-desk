@@ -22,6 +22,7 @@ P&T connects clients (mostly companies in mining, real estate, agro, LPO contrac
 ### M1. Users, roles & notification recipients
 - Email + password login (Supabase Auth); CEO invites users and assigns role.
 - Settings: list of notification recipients (name, title, email), toggles per alert type.
+- The accountant sees finance-safe reminder summaries in the in-app bell; operational reminder details remain CEO-only.
 
 ### M2. Clients & KYC
 - Client types: **Individual** and **Company**.
@@ -79,3 +80,4 @@ Client-facing WhatsApp/SMS reminders, credit bureau API integration, lending mod
 5. See due/overdue alerts in the bell, the Outbox emails, and a follow-up call task.
 6. See fees auto-recognised and the referral fee payable.
 7. Log in as Accountant → cannot see clients/deals; can run trial balance, P&L, balance sheet, cash flow and export Excel/PDF.
+
