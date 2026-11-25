@@ -85,8 +85,8 @@ export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount
   }
 
   return (
-    <AuthCard title="Welcome back" description="Use the email and password the CEO set up for you.">
-      <div className="space-y-6">
+    <AuthCard title="Welcome back" description="Sign in with your P&T staff account.">
+      <div className="space-y-5">
         {urlError === "no-access" && (
           <FormAlert tone="error">
             <p>Your account doesn&apos;t have access yet. Ask the CEO to activate it.</p>
@@ -104,7 +104,7 @@ export function LoginCard({ demoAccounts }: { demoAccounts: readonly DemoAccount
           <FormAlert tone="error">{state.message}</FormAlert>
         )}
 
-        <form ref={formRef} action={action} onSubmit={onSubmit} noValidate className="space-y-5">
+        <form ref={formRef} action={action} onSubmit={onSubmit} noValidate className="space-y-4">
           <input type="hidden" name="next" value={params.get("next") ?? ""} />
 
           <FormField id="email" label="Email" error={errorFor("email")}>

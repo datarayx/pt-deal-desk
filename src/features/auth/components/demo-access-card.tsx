@@ -26,23 +26,31 @@ export function DemoAccessCard({
   return (
     <section
       aria-labelledby="demo-access-title"
-      className="rounded-xl border border-dashed border-[#c7d4e1] bg-[#f3f7fb] p-4 sm:p-5"
+      className="rounded-xl border border-dashed border-[#c7d4e1] bg-[#f3f7fb] p-4"
     >
-      <h2 id="demo-access-title" className="text-sm font-medium text-auth-subtle">
-        Demo mode · fictional data only
-      </h2>
-      <ul className="mt-3 space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="demo-access-title" className="text-sm font-medium text-auth-subtle">
+          Demo access
+        </h2>
+        <span className="rounded-full bg-white px-2 py-0.5 text-[0.6875rem] font-semibold tracking-[0.08em] text-auth-muted uppercase">
+          Fictional data
+        </span>
+      </div>
+      <ul className="mt-3 grid gap-3 sm:grid-cols-2">
         {accounts.map((account) => {
           const pending = pendingEmail === account.email;
           return (
-            <li key={account.email} className="flex items-center justify-between gap-3">
+            <li
+              key={account.email}
+              className="flex min-w-0 flex-col rounded-lg border border-auth-border/80 bg-white p-3"
+            >
               <div className="min-w-0">
                 <p className="text-[0.9375rem] font-semibold text-auth-heading">{account.label}</p>
-                <p className="text-[0.8125rem] leading-5 text-auth-subtle">
+                <p className="mt-1 text-[0.75rem] leading-5 text-auth-subtle">
                   <span className="block truncate" title={account.email}>
                     {account.email}
                   </span>
-                  <span className="block font-mono text-[0.78rem] [overflow-wrap:anywhere]">
+                  <span className="block font-mono text-[0.72rem] [overflow-wrap:anywhere]">
                     <span className="sr-only">Password: </span>
                     {account.password}
                   </span>
@@ -55,7 +63,7 @@ export function DemoAccessCard({
                 aria-label={`Sign in as the demo ${account.label}`}
                 aria-busy={pending || undefined}
                 className={cn(
-                  "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[9px] border border-auth-border bg-white px-4 text-[0.9375rem] font-semibold text-auth-heading",
+                  "mt-3 inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-auth-border bg-white px-3 text-[0.875rem] font-semibold text-auth-heading",
                   "shadow-[0_1px_2px_rgb(3_27_51/0.05)] transition-colors motion-reduce:transition-none",
                   "hover:border-[#c4d1de] hover:bg-auth-canvas active:bg-[#edf2f7]",
                   "focus-visible:ring-2 focus-visible:ring-auth-teal focus-visible:ring-offset-1 focus-visible:outline-none",

@@ -26,7 +26,7 @@ export function SettingsPanel({
           </h2>
           <p className="max-w-2xl text-body text-muted-foreground">{description}</p>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="w-full shrink-0 sm:w-auto">{action}</div>}
       </div>
       <div
         className={cn(

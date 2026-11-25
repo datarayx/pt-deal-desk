@@ -13,7 +13,14 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { DownloadIcon, FileSpreadsheetIcon, FileTextIcon, SearchIcon, SearchXIcon, XIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  SearchIcon,
+  SearchXIcon,
+  XIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useMemo, useState } from "react";
 import type * as React from "react";
@@ -66,7 +73,10 @@ type DataTableProps<TData> = {
   /** Accessible name for the table. */
   label: string;
   /** Optional company details shown in Excel/PDF headers. */
-  exportCompany?: Pick<ExportTable, "companyName" | "companyAddress" | "companyEmail" | "companyPhone">;
+  exportCompany?: Pick<
+    ExportTable,
+    "companyName" | "companyAddress" | "companyEmail" | "companyPhone"
+  >;
 };
 
 const INTERACTIVE = "a, button, input, label, [role=checkbox], [role=menuitem]";
@@ -191,7 +201,10 @@ export function DataTable<TData>({
 
   function getExportTable(selectedOnly = false): ExportTable {
     const exportColumns = table.getVisibleLeafColumns().filter((c) => !c.columnDef.meta?.noExport);
-    const rows = selectedOnly && selectedRows.length > 0 ? selectedRows : table.getPrePaginationRowModel().rows;
+    const rows =
+      selectedOnly && selectedRows.length > 0
+        ? selectedRows
+        : table.getPrePaginationRowModel().rows;
     return {
       title: label,
       columns: exportColumns.map((c) => c.columnDef.meta?.label ?? c.id),
@@ -244,14 +257,34 @@ export function DataTable<TData>({
   }
 
   function exportButtons(selectedOnly = false) {
-    return <>
-      <Button variant="outline" size="sm" onClick={() => exportCsv(selectedOnly)}><DownloadIcon /> CSV</Button>
-      <Button variant="outline" size="sm" pending={exporting === "excel"} disabled={exporting !== null} onClick={() => void exportExcelFile(selectedOnly)}><FileSpreadsheetIcon /> Excel</Button>
-      <Button variant="outline" size="sm" pending={exporting === "pdf"} disabled={exporting !== null} onClick={() => void exportPdfFile(selectedOnly)}><FileTextIcon /> PDF</Button>
-    </>;
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => exportCsv(selectedOnly)}>
+          <DownloadIcon /> CSV
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          pending={exporting === "excel"}
+          disabled={exporting !== null}
+          onClick={() => void exportExcelFile(selectedOnly)}
+        >
+          <FileSpreadsheetIcon /> Excel
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          pending={exporting === "pdf"}
+          disabled={exporting !== null}
+          onClick={() => void exportPdfFile(selectedOnly)}
+        >
+          <FileTextIcon /> PDF
+        </Button>
+      </div>
+    );
   }
 
-  function onRowClick(event: React.MouseEvent<HTMLTableRowElement>, row: TData) {
+  function onRowClick(event: React.MouseEvent<HTMLElement>, row: TData) {
     if (!rowHref) return;
     if ((event.target as HTMLElement).closest(INTERACTIVE)) return;
     if (window.getSelection()?.toString()) return; // let people copy text
@@ -268,7 +301,7 @@ export function DataTable<TData>({
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-3 sm:px-4">
         {selectedRows.length > 0 ? (
           <div className="flex items-center gap-2" role="status">
             <span className="text-small font-medium">
@@ -315,7 +348,7 @@ export function DataTable<TData>({
             )}
           </>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
           {savedViews && (
             <DataTableSavedViews
               tableKey={tableKey}
@@ -330,74 +363,129 @@ export function DataTable<TData>({
         </div>
       </div>
 
-      <Table containerClassName="max-h-[calc(100dvh-18rem)] min-h-40" aria-label={label}>
-        <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead
-                  key={header.id}
+      {pageRows.length === 0 ? (
+        <EmptyState
+          variant="plain"
+          icon={<SearchXIcon />}
+          title="Nothing matches"
+          description="Try a different search or clear the filters."
+          action={
+            <Button variant="outline" size="sm" onClick={resetFilters}>
+              Clear filters
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="space-y-3 p-3 sm:hidden" aria-label={`${label} cards`}>
+            {pageRows.map((row) => {
+              const cells = row.getVisibleCells().filter((cell) => cell.column.id !== "select");
+              const [primary, ...details] = cells;
+              return (
+                <article
+                  key={row.id}
+                  data-state={row.getIsSelected() ? "selected" : undefined}
+                  onClick={(event) => onRowClick(event, row.original)}
                   className={cn(
-                    header.column.columnDef.meta?.align === "right" && "text-right",
-                    header.column.columnDef.meta?.className,
+                    "rounded-xl border border-border bg-surface p-4 shadow-xs",
+                    rowHref && "cursor-pointer hover:border-border-strong",
+                    row.getIsSelected() && "border-accent-ink bg-accent-soft/40",
                   )}
-                  aria-sort={
-                    header.column.getIsSorted() === "asc"
-                      ? "ascending"
-                      : header.column.getIsSorted() === "desc"
-                        ? "descending"
-                        : undefined
-                  }
                 >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {pageRows.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={visibleColumns} className="h-auto whitespace-normal">
-                <EmptyState
-                  variant="plain"
-                  icon={<SearchXIcon />}
-                  title="Nothing matches"
-                  description="Try a different search or clear the filters."
-                  action={
-                    <Button variant="outline" size="sm" onClick={resetFilters}>
-                      Clear filters
-                    </Button>
-                  }
-                />
-              </TableCell>
-            </TableRow>
-          ) : (
-            pageRows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() ? "selected" : undefined}
-                onClick={(event) => onRowClick(event, row.original)}
-                className={cn(rowHref && "cursor-pointer")}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cn(
-                      cell.column.columnDef.meta?.align === "right" && "text-right",
-                      cell.column.columnDef.meta?.className,
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-caption text-muted-foreground">
+                        {primary?.column.columnDef.meta?.label ?? primary?.column.id}
+                      </p>
+                      <div className="mt-1 min-w-0">
+                        {primary && flexRender(primary.column.columnDef.cell, primary.getContext())}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      {row.getIsSelected() && (
+                        <span className="text-caption font-medium text-accent-ink">Selected</span>
+                      )}
+                    </div>
+                  </div>
+                  {details.length > 0 && (
+                    <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-3">
+                      {details.map((cell) => (
+                        <div key={cell.id} className="min-w-0">
+                          <dt className="text-caption text-muted-foreground">
+                            {cell.column.columnDef.meta?.label ?? cell.column.id}
+                          </dt>
+                          <dd
+                            className={cn(
+                              "mt-1 min-w-0 text-small",
+                              !cell.column.columnDef.meta?.noExport && "truncate",
+                              cell.column.columnDef.meta?.noExport && "overflow-visible",
+                              cell.column.columnDef.meta?.align === "right" && "text-right num",
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          <div className="hidden sm:block">
+            <Table containerClassName="max-h-[calc(100dvh-18rem)] min-h-40" aria-label={label}>
+              <TableHeader>
+                {table.getHeaderGroups().map((group) => (
+                  <TableRow key={group.id}>
+                    {group.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          header.column.columnDef.meta?.align === "right" && "text-right",
+                          header.column.columnDef.meta?.className,
+                        )}
+                        aria-sort={
+                          header.column.getIsSorted() === "asc"
+                            ? "ascending"
+                            : header.column.getIsSorted() === "desc"
+                              ? "descending"
+                              : undefined
+                        }
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+              </TableHeader>
+              <TableBody>
+                {pageRows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() ? "selected" : undefined}
+                    onClick={(event) => onRowClick(event, row.original)}
+                    className={cn(rowHref && "cursor-pointer")}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          cell.column.columnDef.meta?.align === "right" && "text-right",
+                          cell.column.columnDef.meta?.className,
+                        )}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
 
       <DataTablePagination table={table} />
     </div>

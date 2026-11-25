@@ -90,7 +90,7 @@ export function FinanceDashboardWorkspace({ data }: { data: FinanceDashboardData
               description="Posted income and expenses will appear in the P&amp;L snapshot."
             />
           ) : (
-            <Table>
+            <Table mobileCards>
               <TableHeader>
                 <TableRow>
                   <TableHead>Line</TableHead>
@@ -100,29 +100,33 @@ export function FinanceDashboardWorkspace({ data }: { data: FinanceDashboardData
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">Income</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Line" className="font-medium">
+                    Income
+                  </TableCell>
+                  <TableCell data-label="This month" className="text-right">
                     <MoneyText value={data.pnl.income} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Last month" className="text-right">
                     <MoneyText value={data.pnl.priorIncome} />
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Expenses</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Line" className="font-medium">
+                    Expenses
+                  </TableCell>
+                  <TableCell data-label="This month" className="text-right">
                     <MoneyText value={data.pnl.expenses} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Last month" className="text-right">
                     <MoneyText value={data.pnl.priorExpenses} />
                   </TableCell>
                 </TableRow>
                 <TableRow className="font-semibold">
-                  <TableCell>Net profit / (loss)</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Line">Net profit / (loss)</TableCell>
+                  <TableCell data-label="This month" className="text-right">
                     <MoneyText value={data.pnl.profit} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-label="Last month" className="text-right">
                     <MoneyText value={data.pnl.priorProfit} />
                   </TableCell>
                 </TableRow>

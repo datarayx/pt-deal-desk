@@ -147,21 +147,21 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
             description="New open deals will appear here as they enter the pipeline."
           />
         ) : (
-          <Table>
+          <Table mobileCards>
             <TableHeader>
               <TableRow>
                 <TableHead>Client</TableHead>
                 <TableHead>Financier</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Stage</TableHead>
-                <TableHead>Deficiencies</TableHead>
-                <TableHead>Days in stage</TableHead>
+                <TableHead className="text-right">Deficiencies</TableHead>
+                <TableHead className="text-right">Days in stage</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.ongoingTransactions.map((deal) => (
                 <TableRow key={deal.id}>
-                  <TableCell>
+                  <TableCell data-label="Client">
                     <Link
                       href={`/deals/${deal.id}`}
                       className="font-medium text-accent-ink hover:underline"
@@ -172,15 +172,15 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
                       {deal.reference}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Financier">
                     {deal.financier_name ?? (
                       <span className="text-muted-foreground">Unassigned</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Amount" className="text-right">
                     <MoneyText value={dealAmountForView(deal)} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Stage">
                     <span className="inline-flex items-center gap-2">
                       <span
                         className="size-2 rounded-full"
@@ -189,14 +189,16 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
                       {deal.stage_name}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Deficiencies" className="text-right">
                     {deal.deficiency_count > 0 ? (
                       <span className="text-warning">{deal.deficiency_count}</span>
                     ) : (
                       <span className="text-success">0</span>
                     )}
                   </TableCell>
-                  <TableCell className="num">{deal.days_in_stage}</TableCell>
+                  <TableCell data-label="Days in stage" className="text-right num">
+                    {deal.days_in_stage}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -244,12 +246,12 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
               description="Unconfirmed past-due instalments will appear here."
             />
           ) : (
-            <Table>
+            <Table mobileCards>
               <TableHeader>
                 <TableRow>
                   <TableHead>Client</TableHead>
                   <TableHead>Due</TableHead>
-                  <TableHead>Outstanding</TableHead>
+                  <TableHead className="text-right">Outstanding</TableHead>
                   <TableHead>Age</TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
@@ -257,7 +259,7 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
               <TableBody>
                 {data.overdue.slice(0, 8).map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell>
+                    <TableCell data-label="Client">
                       <Link
                         href={`/deals/${row.deal_id}`}
                         className="font-medium text-accent-ink hover:underline"
@@ -268,19 +270,19 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
                         {row.reference}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Due">
                       <DateText value={row.due_date} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Outstanding" className="text-right">
                       <MoneyText value={row.outstanding} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Age">
                       <StatusBadge
                         status={repaymentStatus.overdue}
                         detail={`${row.days_overdue} days`}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-label="Action">
                       <DashboardCallSheet
                         scheduleId={row.id}
                         dealId={row.deal_id}
@@ -362,24 +364,28 @@ export function DashboardWorkspace({ data }: { data: DashboardData }) {
             description="Funded referral activity will appear here."
           />
         ) : (
-          <Table>
+          <Table mobileCards>
             <TableHeader>
               <TableRow>
                 <TableHead>Referrer</TableHead>
-                <TableHead>Funded deals</TableHead>
-                <TableHead>Amount funded</TableHead>
-                <TableHead>Fees earned</TableHead>
+                <TableHead className="text-right">Funded deals</TableHead>
+                <TableHead className="text-right">Amount funded</TableHead>
+                <TableHead className="text-right">Fees earned</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.topReferrers.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell className="font-medium">{row.name}</TableCell>
-                  <TableCell className="num">{row.deals_funded}</TableCell>
-                  <TableCell>
+                  <TableCell data-label="Referrer" className="font-medium">
+                    {row.name}
+                  </TableCell>
+                  <TableCell data-label="Funded deals" className="text-right num">
+                    {row.deals_funded}
+                  </TableCell>
+                  <TableCell data-label="Amount funded" className="text-right">
                     <MoneyText value={row.amount_funded} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Fees earned" className="text-right">
                     <MoneyText value={row.fees_earned} />
                   </TableCell>
                 </TableRow>
@@ -398,19 +404,19 @@ function dealAmountForView(deal: DashboardData["ongoingTransactions"][number]) {
 
 function RepaymentTable({ rows }: { rows: DashboardData["dueSoon"] }) {
   return (
-    <Table>
+    <Table mobileCards>
       <TableHeader>
         <TableRow>
           <TableHead>Client</TableHead>
           <TableHead>Due</TableHead>
-          <TableHead>Amount</TableHead>
+          <TableHead className="text-right">Amount</TableHead>
           <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {rows.slice(0, 8).map((row) => (
           <TableRow key={row.id}>
-            <TableCell>
+            <TableCell data-label="Client">
               <Link
                 href={`/deals/${row.deal_id}`}
                 className="font-medium text-accent-ink hover:underline"
@@ -419,16 +425,16 @@ function RepaymentTable({ rows }: { rows: DashboardData["dueSoon"] }) {
               </Link>
               <span className="block text-caption text-muted-foreground">{row.reference}</span>
             </TableCell>
-            <TableCell>
+            <TableCell data-label="Due">
               <DateText value={row.due_date} />
               <span className="ml-2 text-caption text-muted-foreground">
                 {row.days_until_due === 0 ? "today" : `in ${row.days_until_due}d`}
               </span>
             </TableCell>
-            <TableCell>
+            <TableCell data-label="Amount" className="text-right">
               <MoneyText value={row.outstanding} />
             </TableCell>
-            <TableCell>
+            <TableCell data-label="Status">
               <StatusBadge
                 status={row.days_until_due <= 0 ? repaymentStatus.due : repaymentStatus.scheduled}
               />

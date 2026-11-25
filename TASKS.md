@@ -40,6 +40,6 @@
 ## Phase 5 — Polish & ship
 - [ ] 5.1 UI polish pass (every screen vs DESIGN.md)
 - [ ] 5.2 Empty/loading/error states everywhere; responsive check
-- [ ] 5.3 Security review (RLS tests as accountant)
-- [ ] 5.4 Tests for money logic (schedules, fees, trial balance)
-- [ ] 5.5 Deploy to Vercel; demo accounts; demo walkthrough script
+- [x] 5.3 Security review (RLS tests as accountant)
+- [x] 5.4 Tests for money logic (schedules, fees, trial balance)
+- [x] 5.5 Deploy to Vercel; demo accounts; demo walkthrough script

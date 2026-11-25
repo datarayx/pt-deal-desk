@@ -162,7 +162,7 @@ function ReportTable({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-mobile-cards="true">
           <table className="w-full text-small">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
@@ -174,21 +174,31 @@ function ReportTable({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.code} className="border-b border-border/60">
-                  <td className="px-2 py-2">
+                  <td data-label="Account" className="px-2 py-2">
                     <span className="mr-3 num text-muted-foreground">{row.code}</span>
                     {row.name}
                   </td>
-                  <td className="px-2 py-2 text-right">{cell(row.current)}</td>
-                  <td className="px-2 py-2 text-right">{cell(row.prior)}</td>
+                  <td data-label={currentLabel} className="px-2 py-2 text-right">
+                    {cell(row.current)}
+                  </td>
+                  <td data-label={priorLabel} className="px-2 py-2 text-right">
+                    {cell(row.prior)}
+                  </td>
                 </tr>
               ))}
             </tbody>
             {totalLabel && (
               <tfoot>
                 <tr className="font-semibold">
-                  <td className="px-2 py-3">{totalLabel}</td>
-                  <td className="px-2 py-3 text-right">{cell(currentTotal ?? "0.00")}</td>
-                  <td className="px-2 py-3 text-right">{cell(priorTotal ?? "0.00")}</td>
+                  <td data-label="Total" className="px-2 py-3">
+                    {totalLabel}
+                  </td>
+                  <td data-label={currentLabel} className="px-2 py-3 text-right">
+                    {cell(currentTotal ?? "0.00")}
+                  </td>
+                  <td data-label={priorLabel} className="px-2 py-3 text-right">
+                    {cell(priorTotal ?? "0.00")}
+                  </td>
                 </tr>
               </tfoot>
             )}

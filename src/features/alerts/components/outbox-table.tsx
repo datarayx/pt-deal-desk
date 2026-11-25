@@ -48,7 +48,7 @@ export function OutboxTable({ emails }: { emails: OutboxEmail[] }) {
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-        <Table>
+        <Table mobileCards>
           <TableHeader>
             <TableRow>
               <TableHead>Subject</TableHead>
@@ -61,7 +61,7 @@ export function OutboxTable({ emails }: { emails: OutboxEmail[] }) {
           <TableBody>
             {emails.map((email) => (
               <TableRow key={email.id}>
-                <TableCell className="max-w-[26rem]">
+                <TableCell data-label="Subject" className="max-w-[26rem]">
                   <span className="block truncate font-medium">{email.subject}</span>
                   {email.related_entity && (
                     <span className="block truncate text-caption text-muted-foreground">
@@ -69,16 +69,16 @@ export function OutboxTable({ emails }: { emails: OutboxEmail[] }) {
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="max-w-[18rem]">
+                <TableCell data-label="Recipients" className="max-w-[18rem]">
                   <span className="block truncate text-small">{email.to_emails.join(", ")}</span>
                 </TableCell>
-                <TableCell>
+                <TableCell data-label="Status">
                   <Badge variant={statusVariant[email.status]}>{email.status}</Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell data-label="Created">
                   <DateText value={email.created_at} withTime />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell data-label="Preview" className="text-right">
                   <Button variant="outline" size="sm" onClick={() => setSelected(email)}>
                     <MailOpenIcon /> Preview
                   </Button>
@@ -113,7 +113,7 @@ export function OutboxTable({ emails }: { emails: OutboxEmail[] }) {
                 title={`Preview of ${selected.subject}`}
                 srcDoc={selected.html}
                 sandbox=""
-                className="h-[min(65vh,40rem)] w-full rounded-lg border border-border bg-white"
+                className="h-[min(65vh,40rem)] w-full rounded-lg border border-border bg-surface"
               />
             </SheetBody>
           )}

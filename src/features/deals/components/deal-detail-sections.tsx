@@ -330,7 +330,7 @@ export function DealRepayments({ schedules }: { schedules: DealDetail["schedules
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-mobile-cards="true">
           <table className="w-full text-small">
             <thead className="border-b border-border bg-surface-subtle text-left text-muted-foreground">
               <tr>
@@ -346,26 +346,30 @@ export function DealRepayments({ schedules }: { schedules: DealDetail["schedules
             <tbody className="divide-y divide-border">
               {schedules.map((item) => (
                 <tr key={item.id}>
-                  <td className="px-5 py-3 num">#{item.instalment_no}</td>
-                  <td className="px-5 py-3">
+                  <td data-label="Instalment" className="px-5 py-3 num">
+                    #{item.instalment_no}
+                  </td>
+                  <td data-label="Due" className="px-5 py-3">
                     <DateText value={item.due_date} />
                     {item.days_overdue > 0 && (
                       <span className="ml-2 text-danger">{item.days_overdue}d late</span>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Principal" className="px-5 py-3 text-right">
                     <MoneyText value={item.principal_due} />
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Interest" className="px-5 py-3 text-right">
                     <MoneyText value={item.interest_due} />
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Total" className="px-5 py-3 text-right">
                     <MoneyText value={item.total_due} />
                   </td>
-                  <td className="px-5 py-3">
+                  <td data-label="Status" className="px-5 py-3">
                     <StatusBadge status={repaymentStatus[item.status]} />
                   </td>
-                  <td className="px-5 py-3 num text-muted-foreground">{item.report_count}</td>
+                  <td data-label="Reports" className="px-5 py-3 num text-muted-foreground">
+                    {item.report_count}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -392,7 +396,7 @@ export function DealFees({ fees }: { fees: DealDetail["fees"] }) {
         <CardDescription>Provider, client and referral fees attached to this deal.</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-mobile-cards="true">
           <table className="w-full text-small">
             <thead className="border-b border-border bg-surface-subtle text-left text-muted-foreground">
               <tr>
@@ -406,19 +410,19 @@ export function DealFees({ fees }: { fees: DealDetail["fees"] }) {
             <tbody className="divide-y divide-border">
               {fees.map((fee) => (
                 <tr key={fee.id}>
-                  <td className="px-5 py-3 font-medium capitalize">
+                  <td data-label="Fee" className="px-5 py-3 font-medium capitalize">
                     {fee.fee_kind.replaceAll("_", " ")}
                   </td>
-                  <td className="px-5 py-3 num">
+                  <td data-label="Terms" className="px-5 py-3 num">
                     {fee.basis === "percent" ? `${fee.value}%` : <MoneyText value={fee.value} />}
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Computed" className="px-5 py-3 text-right">
                     <MoneyText value={fee.computed_amount} />
                   </td>
-                  <td className="px-5 py-3 text-muted-foreground">
+                  <td data-label="Trigger" className="px-5 py-3 text-muted-foreground">
                     {fee.trigger.replaceAll("_", " ")}
                   </td>
-                  <td className="px-5 py-3">
+                  <td data-label="Status" className="px-5 py-3">
                     <StatusBadge
                       tone={
                         fee.status === "paid" || fee.status === "received"

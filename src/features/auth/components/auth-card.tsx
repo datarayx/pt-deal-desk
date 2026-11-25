@@ -17,7 +17,7 @@ export function AuthCard({
   return (
     <div
       className={cn(
-        "w-full max-w-[440px] rounded-2xl border border-auth-border/80 bg-white p-6 shadow-[0_1px_2px_rgb(3_27_51/0.04),0_16px_40px_-16px_rgb(3_27_51/0.18)] sm:p-9",
+        "w-full max-w-[480px] rounded-2xl border border-auth-border/80 bg-white p-6 shadow-[0_1px_2px_rgb(3_27_51/0.04),0_16px_40px_-16px_rgb(3_27_51/0.18)] sm:p-8",
         className,
       )}
     >
@@ -29,7 +29,7 @@ export function AuthCard({
           <p className="text-[0.9375rem] leading-6 text-auth-subtle">{description}</p>
         )}
       </div>
-      <div className="mt-7">{children}</div>
+      <div className="mt-6">{children}</div>
     </div>
   );
 }

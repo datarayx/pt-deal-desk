@@ -377,7 +377,7 @@ export function Client360Deals({ data }: { data: Client360 }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-mobile-cards="true">
           <table className="w-full text-small">
             <thead className="border-b border-border bg-surface-subtle text-left text-muted-foreground">
               <tr>
@@ -392,7 +392,7 @@ export function Client360Deals({ data }: { data: Client360 }) {
             <tbody className="divide-y divide-border">
               {data.deals.map((deal) => (
                 <tr key={deal.id}>
-                  <td className="px-5 py-3">
+                  <td data-label="Reference" className="px-5 py-3">
                     <Link
                       href={`/deals/${deal.id}`}
                       className="font-medium text-accent-ink hover:underline"
@@ -400,9 +400,13 @@ export function Client360Deals({ data }: { data: Client360 }) {
                       {deal.reference}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-muted-foreground">{deal.facility_type ?? "—"}</td>
-                  <td className="px-5 py-3">{deal.financier_name ?? "—"}</td>
-                  <td className="px-5 py-3">
+                  <td data-label="Facility" className="px-5 py-3 text-muted-foreground">
+                    {deal.facility_type ?? "—"}
+                  </td>
+                  <td data-label="Financier" className="px-5 py-3">
+                    {deal.financier_name ?? "—"}
+                  </td>
+                  <td data-label="Stage" className="px-5 py-3">
                     <span className="inline-flex items-center gap-2">
                       <span
                         className="size-2 rounded-full"
@@ -411,12 +415,12 @@ export function Client360Deals({ data }: { data: Client360 }) {
                       {deal.stage_name}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Amount" className="px-5 py-3 text-right">
                     <MoneyText
                       value={deal.amount_disbursed ?? deal.amount_approved ?? deal.amount_requested}
                     />
                   </td>
-                  <td className="px-5 py-3">
+                  <td data-label="Outcome" className="px-5 py-3">
                     <StatusBadge status={dealOutcome[deal.outcome]} />
                   </td>
                 </tr>
@@ -449,7 +453,7 @@ export function Client360Repayments({ data }: { data: Client360 }) {
         <CardDescription>Instalments across all deals for this client.</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-mobile-cards="true">
           <table className="w-full text-small">
             <thead className="border-b border-border bg-surface-subtle text-left text-muted-foreground">
               <tr>
@@ -464,21 +468,25 @@ export function Client360Repayments({ data }: { data: Client360 }) {
             <tbody className="divide-y divide-border">
               {data.schedules.map((schedule) => (
                 <tr key={schedule.id}>
-                  <td className="px-5 py-3 font-medium">{dealRefs.get(schedule.deal_id) ?? "—"}</td>
-                  <td className="px-5 py-3 num">#{schedule.instalment_no}</td>
-                  <td className="px-5 py-3">
+                  <td data-label="Deal" className="px-5 py-3 font-medium">
+                    {dealRefs.get(schedule.deal_id) ?? "—"}
+                  </td>
+                  <td data-label="Instalment" className="px-5 py-3 num">
+                    #{schedule.instalment_no}
+                  </td>
+                  <td data-label="Due" className="px-5 py-3">
                     <DateText value={schedule.due_date} />
                     {schedule.days_overdue > 0 && (
                       <span className="ml-2 text-danger">{schedule.days_overdue}d late</span>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Amount" className="px-5 py-3 text-right">
                     <MoneyText value={schedule.total_due} />
                   </td>
-                  <td className="px-5 py-3">
+                  <td data-label="Status" className="px-5 py-3">
                     <StatusBadge status={repaymentStatus[schedule.status]} />
                   </td>
-                  <td className="px-5 py-3 num text-muted-foreground">
+                  <td data-label="Reports" className="px-5 py-3 num text-muted-foreground">
                     {reportCount.get(schedule.id) ?? 0}
                   </td>
                 </tr>

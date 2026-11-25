@@ -280,6 +280,92 @@
   --shadow-xl: var(--shadow-sheet);
 }
 
+/* Mobile data tables become readable cards instead of forcing horizontal scrolling. */
+@media (max-width: 639px) {
+  [data-mobile-cards="true"] {
+    overflow: visible;
+  }
+
+  [data-mobile-cards="true"] table {
+    display: block;
+  }
+
+  [data-mobile-cards="true"] thead {
+    display: none;
+  }
+
+  [data-mobile-cards="true"] tbody {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  [data-mobile-cards="true"] tbody tr {
+    display: grid;
+    gap: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    padding: 1rem;
+    box-shadow: var(--shadow-subtle);
+  }
+
+  [data-mobile-cards="true"] tbody tr:hover {
+    background: var(--surface);
+  }
+
+  [data-mobile-cards="true"] tbody td {
+    display: grid;
+    min-height: 1.5rem;
+    grid-template-columns: minmax(5.5rem, 0.8fr) minmax(0, 1.4fr);
+    gap: 0.75rem;
+    align-items: start;
+    height: auto;
+    border: 0;
+    padding: 0;
+    white-space: normal;
+    text-align: left;
+  }
+
+  [data-mobile-cards="true"] tbody td::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  [data-mobile-cards="true"] tbody td:first-child {
+    display: block;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  [data-mobile-cards="true"] tbody td:first-child::before {
+    display: none;
+  }
+
+  [data-mobile-cards="true"] tbody td.text-right {
+    text-align: right;
+  }
+
+  [data-mobile-cards="true"] tbody td.text-right::before {
+    text-align: left;
+  }
+
+  [data-mobile-cards="true"] tfoot,
+  [data-mobile-cards="true"] tfoot tr {
+    display: block;
+  }
+
+  [data-mobile-cards="true"] tfoot td {
+    display: block;
+    height: auto;
+    padding: 0.75rem;
+    text-align: left;
+  }
+}
+
 /* Type scale — DESIGN.md §3b. Use `text-display`, `text-h1`, … ; captions also add text-muted-foreground */
 @theme {
   --text-display: 1.875rem;

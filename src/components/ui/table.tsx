@@ -6,11 +6,13 @@ import * as React from "react";
 function Table({
   className,
   containerClassName,
+  mobileCards = false,
   ...props
-}: React.ComponentProps<"table"> & { containerClassName?: string }) {
+}: React.ComponentProps<"table"> & { containerClassName?: string; mobileCards?: boolean }) {
   return (
     <div
       data-slot="table-container"
+      data-mobile-cards={mobileCards ? "true" : undefined}
       className={cn("relative w-full overflow-auto", containerClassName)}
     >
       <table

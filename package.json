@@ -13,6 +13,7 @@
     "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:integration": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run tests/supabase-accountant.integration.test.ts tests/supabase-money.integration.test.ts",
     "test:watch": "vitest",
     "demo:users": "node --env-file=.env.local scripts/create-demo-users.mts",
     "db:push": "node --env-file=.env.local scripts/db-push.mts",

@@ -359,7 +359,7 @@ export function Client360CreditChecks({
               description="Add them while recording a credit check."
             />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" data-mobile-cards="true">
               <table className="w-full text-small">
                 <thead className="border-b border-border bg-surface-subtle text-left text-muted-foreground">
                   <tr>
@@ -372,14 +372,16 @@ export function Client360CreditChecks({
                 <tbody className="divide-y divide-border">
                   {exposures.map((exposure) => (
                     <tr key={exposure.id}>
-                      <td className="px-5 py-3 font-medium">{exposure.lender_name}</td>
-                      <td className="px-5 py-3 text-muted-foreground">
+                      <td data-label="Lender" className="px-5 py-3 font-medium">
+                        {exposure.lender_name}
+                      </td>
+                      <td data-label="Facility" className="px-5 py-3 text-muted-foreground">
                         {exposure.facility_type ?? "—"}
                       </td>
-                      <td className="px-5 py-3 text-right">
+                      <td data-label="Outstanding" className="px-5 py-3 text-right">
                         <MoneyText value={String(exposure.outstanding)} />
                       </td>
-                      <td className="px-5 py-3">
+                      <td data-label="Status" className="px-5 py-3">
                         <StatusBadge status={exposureStatus[exposure.status]} />
                       </td>
                     </tr>
